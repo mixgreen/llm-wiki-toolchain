@@ -180,26 +180,45 @@ toolchain 支持两种摄入模式：
 
 1. **读取来源。** 如果来源在 raw/ 中，优先用 pymupdf（`python3 -c "import pymupdf; ..."`）提取 PDF 文本，用 read_file 读取 markdown。如果是 URL，用 web_extract 或 browser。如果是图片，用 vision_analyze。如果 pymupdf 不可用，退而用 `pdftotext`。
 
-   **raw/ 完整性要求：** 所有写入 `raw/` 的原始资料必须记录 `sha256`。raw/ 是不可变来源层，不应被直接覆盖或静默修改。重新摄入同一来源时，应重算哈希；若哈希不同，标记为来源漂移并让用户决定是否新建版本或更新 wiki 页面。
+2. **持久化到 raw/。** 读取来源后，**必须**将原始资料保存到 `raw/` 目录，确保来源可追溯：
+   - **本地文件**（PDF、markdown、图片）：复制到 `raw/<合理子目录>/`（如 `raw/papers/`、`raw/articles/`、`raw/notes/`）
+   - **URL 来源**：将提取的文本保存为 `raw/web/<标题或域名>.md`
+   - **用户口述/粘贴内容**：保存为 `raw/notes/<主题>.md`
+   - 所有 raw 文件必须带 frontmatter，包含 `sha256`（对 body 内容计算）、`source_url`（如有）、`source_type`、`ingested` 日期
+   - 如果来源已在 raw/ 中存在（通过文件名或 sha256 匹配），跳过此步
 
-2. **与用户讨论。** 预扫描确认后，用 clarify() 呈现关键要点。询问：
+   示例 frontmatter：
+   ```yaml
+   ---
+   source_url: "https://arxiv.org/abs/2301.xxxxx"
+   source_type: paper
+   ingested: 2026-05-28
+   sha256: <body 内容的 hex digest>
+   ---
+   ```
+
+   > **这一步不可跳过。** 如果来源没有进入 raw/，wiki 页面就失去了可追溯性——未来无法验证声明来自哪里、无法重新摄入、无法检测来源漂移。
+
+   **raw/ 完整性要求：** raw/ 是不可变来源层，不应被直接覆盖或静默修改。重新摄入同一来源时，应重算哈希；若哈希不同，标记为来源漂移并让用户决定是否新建版本或更新 wiki 页面。
+
+3. **与用户讨论。** 预扫描确认后，用 clarify() 呈现关键要点。询问：
    - 哪些内容需要重点强调？
    - 有哪些已有页面需要更新？
    - 有哪些新的实体/概念需要单独建页？
 
-3. **创建来源摘要页。** 使用页面模板，写入 `wiki/topics/<来源标题>.md`。先加载模板：`skill_view(name='llm-wiki-toolchain', file_path='templates/page-templates/source-summary.md')`。
+4. **创建来源摘要页。** 使用页面模板，写入 `wiki/topics/<来源标题>.md`。先加载模板：`skill_view(name='llm-wiki-toolchain', file_path='templates/page-templates/source-summary.md')`。
 
-4. **更新实体页。** 对来源中提到的每个实体：
+5. **更新实体页。** 对来源中提到的每个实体：
    - 如果实体页已存在，读取后添加引用此来源的章节，用 [[wikilink]] 链回来源摘要
    - 如果不存在，用实体模板创建新页面
 
-5. **更新概念页。** 与实体同理。从来源中提取关键概念并整合。
+6. **更新概念页。** 与实体同理。从来源中提取关键概念并整合。
 
-6. **添加交叉引用。** 确保 [[wikilinks]] 双向流通——来源 → 实体/概念，实体/概念 → 来源。
+7. **添加交叉引用。** 确保 [[wikilinks]] 双向流通——来源 → 实体/概念，实体/概念 → 来源。
 
-7. **更新 index.md。** 为所有新创建的页面按类别追加条目。更新被修改页面的摘要。
+8. **更新 index.md。** 为所有新创建的页面按类别追加条目。更新被修改页面的摘要。
 
-8. **追加 log.md。** 使用格式：
+9. **追加 log.md。** 使用格式：
    ```
    ## [YYYY-MM-DD] ingest | 来源标题
    - 新建：[[页面1]]、[[页面2]]
@@ -207,13 +226,13 @@ toolchain 支持两种摄入模式：
    - 关键新增：简述
    ```
 
-9. **自动 lint（策略 A：静默通过，有问题才报告）。** ingest 完成后立即运行 lint，但只报告**本次 ingest 引入的新问题**，不翻旧账。具体做法：
+10. **自动 lint（策略 A：静默通过，有问题才报告）。** ingest 完成后立即运行 lint，但只报告**本次 ingest 引入的新问题**，不翻旧账。具体做法：
    - 记录本次 ingest 新建和更新的页面列表
    - 运行 lint.py 后，只输出涉及这些页面的问题（断链、frontmatter 缺失、过时候选页等）
    - 如果所有本次涉及的页面都通过，静默——不打断用户
    - 如果发现问题，输出警告列表并建议修复
 
-   实现方式：lint.py 增加 `--pages "page1,page2,..."` 参数，只检查指定页面的问题。ingest 流程在步骤 9 调用 `lint.py <wiki-root> --pages <本次涉及的页面>`。
+   实现方式：lint.py 增加 `--pages "page1,page2,..."` 参数，只检查指定页面的问题。ingest 流程在步骤 10 调用 `lint.py <wiki-root> --pages <本次涉及的页面>`。
 
 ## 查询：搜索与综合
 
