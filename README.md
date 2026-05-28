@@ -28,26 +28,41 @@ Agent 读取 → 提取实体和概念 → 创建/更新 wiki 页面
 
 ## 安装
 
-一行命令，交互式选择要安装到哪些 agent：
+### Claude Code（推荐）
+
+在 `~/.claude/settings.json` 的 `extraKnownMarketplaces` 中添加：
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "llm-wiki-toolchain": {
+      "source": {
+        "source": "github",
+        "repo": "mixgreen/llm-wiki-toolchain"
+      }
+    }
+  }
+}
+```
+
+然后在 Claude Code 中运行 `/install llm-wiki-toolchain` 即可。
+
+### 其他 Agent（curl 一键安装）
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mixgreen/llm-wiki-toolchain/main/install.sh | bash
 ```
 
-或通过 npm：
-
-```bash
-npx llm-wiki-toolchain
-```
+交互式选择要安装到哪些 agent（Gemini CLI、Codex CLI、OpenClaw、Hermes）。
 
 <details>
 <summary>手动安装</summary>
 
 ```bash
-git clone https://github.com/mixgreen/llm-wiki-toolchain.git ~/.claude/skills/llm-wiki-toolchain
+git clone https://github.com/mixgreen/llm-wiki-toolchain.git
 ```
 
-然后在 agent 指令文件中添加 loader note（格式见下方"Agent 配置"）。
+将 `skills/llm-wiki-toolchain/` 目录复制到目标 agent 的 skill 路径，然后在指令文件中添加 loader note（格式见下方"Agent 配置"）。
 
 </details>
 
@@ -141,15 +156,17 @@ cd <安装路径> && git pull
 ## 项目结构
 
 ```
-├── SKILL.md              # 完整工作流文档（agent 运行时读取）
-├── install.sh            # 交互式安装脚本
-├── bin/install.js        # npx 入口
-├── scripts/
-│   ├── init.py           # Wiki 初始化
-│   └── lint.py           # 自动化健康检查（13 项）
-├── templates/            # 页面和结构模板
-│   └── page-templates/   # entity / concept / topic / comparison / query
-└── references/           # 设计决策、模式参考、踩坑记录
+├── .claude-plugin/plugin.json    # Claude Code plugin 清单
+├── skills/llm-wiki-toolchain/
+│   ├── SKILL.md                  # 完整工作流文档（agent 运行时读取）
+│   ├── scripts/
+│   │   ├── init.py               # Wiki 初始化
+│   │   └── lint.py               # 自动化健康检查（13 项）
+│   ├── templates/                # 页面和结构模板
+│   │   └── page-templates/       # entity / concept / topic / comparison / query
+│   └── references/               # 设计决策、模式参考、踩坑记录
+├── install.sh                    # 交互式安装脚本（非 Claude Code agent 用）
+└── README.md
 ```
 
 ## 许可证

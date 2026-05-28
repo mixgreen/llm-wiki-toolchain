@@ -1,0 +1,18 @@
+{
+  "name": "llm-wiki-toolchain",
+  "version": "1.0.1",
+  "description": "在 Obsidian 中创建和维护 LLM Wiki 知识库——摄入来源、查询知识、质量检查、管理索引与日志。基于 Karpathy 的 LLM Wiki 模式。",
+  "author": {
+    "name": "mixgreen",
+    "url": "https://github.com/mixgreen"
+  },
+  "repository": "https://github.com/mixgreen/llm-wiki-toolchain",
+  "license": "MIT",
+  "keywords": [
+    "obsidian",
+    "llm-wiki",
+    "knowledge-base",
+    "research",
+    "note-taking"
+  ]
+}
