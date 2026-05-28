@@ -1,5 +1,7 @@
 # llm-wiki-toolchain
 
+**中文文档**: [README.zh-CN.md](./README.zh-CN.md)
+
 Obsidian-based LLM Wiki knowledge base management system.
 
 This toolchain helps you maintain structured knowledge bases with:
