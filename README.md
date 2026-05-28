@@ -1,29 +1,53 @@
 # llm-wiki-toolchain
 
-Hermes Agent skill for creating and maintaining Obsidian-based LLM Wiki knowledge bases.
+Obsidian-based LLM Wiki knowledge base management system.
 
-This skill extends Karpathy's LLM Wiki pattern with a practical toolchain:
+This toolchain helps you maintain structured knowledge bases with:
+- Raw source integrity checks (SHA-256)
+- Organized page types: entities, concepts, topics, comparisons, queries
+- Focused linting after ingestion
+- Archive policies and topic maps
+- Paragraph-level provenance with Markdown footnotes
+- Chinese-first conventions for Obsidian workflows
 
-- wiki initialization templates
-- raw source integrity checks with sha256
-- entity / concept / topic / comparison / query page structure
-- focused lint after ingest
-- archive policy
-- topic maps
-- paragraph-level provenance using Markdown footnotes
-- Chinese-first conventions for the author's Obsidian workflows
+## Installation
 
-## Quick install
+### Option 1: curl (recommended)
 
-Clone this repository into the skill/tooling directory used by your agent:
+```bash
+curl -fsSL https://raw.githubusercontent.com/mixgreen/llm-wiki-toolchain/main/install.sh | bash
+```
+
+This will:
+1. Download the toolchain
+2. Detect installed AI agents (Claude, Gemini, Codex, OpenClaw, Hermes)
+3. Let you select which agents to install into (interactive checkbox menu)
+4. Automatically add loader notes to each agent's configuration
+
+### Option 2: npm/npx
+
+```bash
+npx llm-wiki-toolchain
+```
+
+Or install globally first:
+
+```bash
+npm install -g llm-wiki-toolchain
+llm-wiki-toolchain
+```
+
+Same interactive installation process as curl.
+
+### Option 3: Manual installation
+
+Clone the repository and manually copy to your agent's skill directory:
 
 ```bash
 git clone https://github.com/mixgreen/llm-wiki-toolchain.git
 ```
 
-Then point your agent at the cloned `SKILL.md` and supporting files.
-
-Detailed install notes for Claude Code, Gemini CLI, Codex CLI, and Hermes Agent are below.
+Then follow the agent-specific instructions below.
 
 ## Claude Code
 
