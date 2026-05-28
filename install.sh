@@ -87,13 +87,12 @@ expand_tilde() {
 
 # ─── Interactive selection (number-based, works with piped stdin) ────────────
 select_agents() {
-  local -n _agents_ref=$1
-  local count=${#_agents_ref[@]}
+  local count=${#AGENTS[@]}
   local -a detected_parent=()
 
   # Detect which agents have their parent dir
   for i in $(seq 0 $((count - 1))); do
-    IFS='|' read -r _id _name _path _instr <<< "${_agents_ref[$i]}"
+    IFS='|' read -r _id _name _path _instr <<< "${AGENTS[$i]}"
     _path="$(expand_tilde "$_path")"
     local parent
     parent="$(dirname "$_path")"
@@ -112,7 +111,7 @@ select_agents() {
   echo "" >&2
 
   for i in $(seq 0 $((count - 1))); do
-    IFS='|' read -r _id _name _path _instr <<< "${_agents_ref[$i]}"
+    IFS='|' read -r _id _name _path _instr <<< "${AGENTS[$i]}"
     local num=$((i + 1))
     local tag=""
     if [ "${detected_parent[$i]}" = "true" ]; then
@@ -130,38 +129,35 @@ select_agents() {
   answer="$(read_input "  Your choice: ")"
 
   # Parse answer
-  local -a result=()
+  SELECTED_INDICES=()
   if [ -z "$answer" ]; then
     # Default: select all detected
     for i in $(seq 0 $((count - 1))); do
       if [ "${detected_parent[$i]}" = "true" ]; then
-        result+=("$i")
+        SELECTED_INDICES+=("$i")
       fi
     done
     # If none detected, select all
-    if [ ${#result[@]} -eq 0 ]; then
+    if [ ${#SELECTED_INDICES[@]} -eq 0 ]; then
       for i in $(seq 0 $((count - 1))); do
-        result+=("$i")
+        SELECTED_INDICES+=("$i")
       done
     fi
   elif [ "$answer" = "0" ]; then
-    result=()
+    SELECTED_INDICES=()
   elif [ "$answer" = "$((count + 1))" ]; then
     for i in $(seq 0 $((count - 1))); do
-      result+=("$i")
+      SELECTED_INDICES+=("$i")
     done
   else
     IFS=',' read -ra nums <<< "$answer"
     for n in "${nums[@]}"; do
       n="$(echo "$n" | tr -d ' ')"
       if [[ "$n" =~ ^[0-9]+$ ]] && [ "$n" -ge 1 ] && [ "$n" -le "$count" ]; then
-        result+=("$((n - 1))")
+        SELECTED_INDICES+=("$((n - 1))")
       fi
     done
   fi
-
-  # Return via nameref array
-  SELECTED_INDICES=("${result[@]}")
 }
 
 # ─── Install to one agent ───────────────────────────────────────────────────
