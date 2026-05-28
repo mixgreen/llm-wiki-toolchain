@@ -28,7 +28,15 @@ Agent 读取 → 提取实体和概念 → 创建/更新 wiki 页面
 
 ## 安装
 
-### Claude Code（推荐）
+### npx skills（推荐）
+
+```bash
+npx skills add https://github.com/mixgreen/llm-wiki-toolchain
+```
+
+支持 Claude Code、Gemini CLI、Codex CLI 等所有主流 agent，自动检测并安装。
+
+### Claude Code plugin
 
 在 `~/.claude/settings.json` 的 `extraKnownMarketplaces` 中添加：
 
@@ -45,15 +53,20 @@ Agent 读取 → 提取实体和概念 → 创建/更新 wiki 页面
 }
 ```
 
-然后在 Claude Code 中运行 `/install llm-wiki-toolchain` 即可。
+然后在 Claude Code 中运行 `/install llm-wiki-toolchain`。
 
-### 其他 Agent（curl 一键安装）
+### 其他方式
+
+<details>
+<summary>curl 一键安装</summary>
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mixgreen/llm-wiki-toolchain/main/install.sh | bash
 ```
 
 交互式选择要安装到哪些 agent（Gemini CLI、Codex CLI、OpenClaw、Hermes）。
+
+</details>
 
 <details>
 <summary>手动安装</summary>
