@@ -218,11 +218,11 @@ main() {
     exit 1
   fi
 
-  # Download
+  # 下载
   local src
-  src="$(download_skill)"
-
-  # Clean up temp dir on exit
+  src=$(download_skill)
+  
+  # 设置清理目录（用于 trap）
   CLEANUP_DIR="$(dirname "$src")"
   trap 'rm -rf "$CLEANUP_DIR"' EXIT
 
