@@ -48,17 +48,29 @@ def replace_placeholders(text: str, wiki_name: str, topic: str = "", today: str 
     """Replace template placeholders with actual values."""
     if not today:
         today = date.today().isoformat()
+    topic_value = topic or f"Research wiki for {wiki_name}"
     return (
         text
         .replace("<WIKI_NAME>", wiki_name)
         .replace("<YYYY-MM-DD>", today)
-        .replace("<Topic description>", topic or f"Research wiki for {wiki_name}")
+        .replace("<Topic description — what this wiki is about, scope, boundaries>", topic_value)
+        .replace("<Topic description>", topic_value)
     )
 
 
 def init_wiki(vault_path: Path, wiki_name: str, topic: str = "") -> dict:
     """Initialize the wiki structure. Returns stats dict."""
+    # Reject path traversal or absolute path components in wiki_name
+    if "/" in wiki_name or "\\" in wiki_name or wiki_name.startswith("."):
+        return {"error": f"Invalid wiki name (must not contain path separators or start with '.'): {wiki_name}"}
+
     wiki_root = vault_path / wiki_name
+    # Ensure the resolved path is actually inside vault_path
+    try:
+        wiki_root.resolve().relative_to(vault_path.resolve())
+    except ValueError:
+        return {"error": f"Wiki path escapes parent directory: {wiki_root}"}
+
     today = date.today().isoformat()
 
     if wiki_root.exists():

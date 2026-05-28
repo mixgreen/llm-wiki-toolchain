@@ -1,232 +1,157 @@
 # llm-wiki-toolchain
 
-**中文文档**: [README.zh-CN.md](./README.zh-CN.md)
+> [English](./docs/README.en.md)
 
-Obsidian-based LLM Wiki knowledge base management system.
+用 AI agent 在 Obsidian 中构建和维护结构化知识库。
 
-This toolchain helps you maintain structured knowledge bases with:
-- Raw source integrity checks (SHA-256)
-- Organized page types: entities, concepts, topics, comparisons, queries
-- Focused linting after ingestion
-- Archive policies and topic maps
-- Paragraph-level provenance with Markdown footnotes
-- Chinese-first conventions for Obsidian workflows
+基于 [Karpathy 的 LLM Wiki 模式](https://x.com/karpathy/status/1881417542127472796)，将"读论文 → 提取知识 → 交叉引用 → 持续维护"的流程工具化，让 LLM agent 成为你的知识管理助手。
 
-## Installation
+## 它能做什么
 
-### Option 1: curl (recommended)
+```
+用户提供来源（论文/文章/笔记）
+        ↓
+Agent 读取 → 提取实体和概念 → 创建/更新 wiki 页面
+        ↓
+自动交叉引用、更新索引、追加日志
+        ↓
+定期 lint 检查：孤页、断链、过时内容、标签一致性
+```
+
+**核心能力：**
+
+- **摄入** — 单来源精读或批量导入，自动建立交叉引用
+- **查询** — 综合 wiki 知识回答问题，有价值的回答归档为新页面
+- **检查** — 13 项自动化 lint（孤页、断链、索引一致性、标签审计、过时检测等）
+- **播种** — 在摄入来源前先搭建知识骨架
+- **归档** — 过时页面不删除，移入 `_archive/` 保留历史
+
+## 安装
+
+一行命令，交互式选择要安装到哪些 agent：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mixgreen/llm-wiki-toolchain/main/install.sh | bash
 ```
 
-This will:
-1. Download the toolchain
-2. Detect installed AI agents (Claude, Gemini, Codex, OpenClaw, Hermes)
-3. Let you select which agents to install into (interactive checkbox menu)
-4. Automatically add loader notes to each agent's configuration
-
-### Option 2: npm/npx
+或通过 npm：
 
 ```bash
 npx llm-wiki-toolchain
 ```
 
-Or install globally first:
+<details>
+<summary>手动安装</summary>
 
 ```bash
-npm install -g llm-wiki-toolchain
-llm-wiki-toolchain
-```
-
-Same interactive installation process as curl.
-
-### Option 3: Manual installation
-
-Clone the repository and manually copy to your agent's skill directory:
-
-```bash
-git clone https://github.com/mixgreen/llm-wiki-toolchain.git
-```
-
-Then follow the agent-specific instructions below.
-
-## Claude Code
-
-Recommended location:
-
-```bash
-mkdir -p ~/.claude/skills
 git clone https://github.com/mixgreen/llm-wiki-toolchain.git ~/.claude/skills/llm-wiki-toolchain
 ```
 
-Then add a short loader note to your Claude Code project or global instructions. For example, in `CLAUDE.md`:
+然后在 agent 指令文件中添加 loader note（格式见下方"Agent 配置"）。
+
+</details>
+
+安装器会自动检测本机的 AI agent 并写入配置：
+
+| Agent | 安装路径 | 指令文件 |
+|-------|---------|---------|
+| Claude Code | `~/.claude/skills/llm-wiki-toolchain/` | `CLAUDE.md` |
+| Gemini CLI | `~/.gemini/skills/llm-wiki-toolchain/` | `GEMINI.md` |
+| Codex CLI | `~/.codex/skills/llm-wiki-toolchain/` | `AGENTS.md` |
+| OpenClaw | `~/.openclaw/skills/llm-wiki-toolchain/` | `OPENCLAW.md` |
+| Hermes Agent | `~/.hermes/skills/note-taking/llm-wiki-toolchain/` | 自动发现 |
+
+## 快速开始
+
+### 1. 初始化 wiki
+
+```bash
+python3 <安装路径>/scripts/init.py ~/Documents/MyVault "量子计算" --topic "量子计算与量子纠错"
+```
+
+生成的目录结构：
+
+```
+量子计算/
+├── raw/                  # 不可变原始文档（论文、笔记）
+├── wiki/
+│   ├── entities/         # 人物、组织、产品
+│   ├── concepts/         # 理论、框架、方法
+│   ├── topics/           # 来源摘要、领域概览
+│   ├── comparisons/      # 横向对比分析
+│   └── queries/          # 值得留存的查询结果
+├── _archive/             # 归档页面
+├── _meta/topic-map.md    # 主题导航图
+├── index.md              # 全量索引
+├── log.md                # 活动日志
+└── SCHEMA.md             # 约定与规范
+```
+
+### 2. 运行 lint
+
+```bash
+python3 <安装路径>/scripts/lint.py ~/Documents/MyVault/量子计算
+
+# 常用选项
+python3 ... --json              # JSON 输出
+python3 ... --orphans           # 仅检查孤页
+python3 ... --tags              # 标签审计
+python3 ... --stale             # 过时页面（>90天未更新）
+python3 ... --pages "a.md,b.md" # 只检查指定页面
+```
+
+### 3. 开始使用
+
+安装完成后，在 agent 会话中直接说：
+
+- "帮我摄入这篇论文到 wiki"
+- "wiki 里关于 XX 的内容有哪些？"
+- "跑一下 lint 看看 wiki 健康状况"
+- "帮我搭建一个关于 YY 的知识骨架"
+
+Agent 会自动加载 `SKILL.md` 中的完整工作流指令。
+
+## Agent 配置
+
+安装器自动写入的 loader note 格式：
 
 ```markdown
-## Agent skills
+## Agent skills — LLM Wiki Toolchain
 
 When working with Obsidian LLM Wiki knowledge bases, load and follow:
-`~/.claude/skills/llm-wiki-toolchain/SKILL.md`.
+`<安装路径>/SKILL.md`.
 
-Resolve linked files relative to that directory, especially:
+Resolve linked files relative to that directory:
 - scripts/init.py
 - scripts/lint.py
 - templates/
 - references/
 ```
 
-If your Claude Code setup already uses a different skill directory, clone the repository there and update the path above.
-
-## Gemini CLI
-
-Recommended location:
+## 更新
 
 ```bash
-mkdir -p ~/.gemini/skills
-git clone https://github.com/mixgreen/llm-wiki-toolchain.git ~/.gemini/skills/llm-wiki-toolchain
+# git clone 安装：
+cd <安装路径> && git pull
+
+# curl/npx 安装：
+重新运行安装器即可
 ```
 
-Then add a loader note to your Gemini instructions file. Common choices are a project `GEMINI.md` or your global Gemini context file if your setup uses one:
+## 项目结构
 
-```markdown
-## Agent skills
-
-When the task involves an LLM Wiki, Obsidian knowledge base, source ingest, wiki lint, or wiki querying, read and follow:
-`~/.gemini/skills/llm-wiki-toolchain/SKILL.md`.
-
-Resolve relative paths from `~/.gemini/skills/llm-wiki-toolchain/`.
 ```
-
-## Codex CLI
-
-Recommended location:
-
-```bash
-mkdir -p ~/.codex/skills
-git clone https://github.com/mixgreen/llm-wiki-toolchain.git ~/.codex/skills/llm-wiki-toolchain
-```
-
-Then add a loader note to your Codex instructions. Depending on your setup this may be a project `AGENTS.md` or a global Codex instructions file:
-
-```markdown
-## Agent skills
-
-When working on LLM Wiki / Obsidian knowledge-base tasks, use this skill:
-`~/.codex/skills/llm-wiki-toolchain/SKILL.md`.
-
-Read the skill before acting. Supporting scripts and templates are relative to:
-`~/.codex/skills/llm-wiki-toolchain/`.
-```
-
-## OpenClaw
-
-Recommended location:
-
-```bash
-mkdir -p ~/.openclaw/skills
-git clone https://github.com/mixgreen/llm-wiki-toolchain.git ~/.openclaw/skills/llm-wiki-toolchain
-```
-
-Then add a loader note to your OpenClaw instructions file (typically `OPENCLAW.md` in project root or global config):
-
-```markdown
-## Agent skills
-
-When working with Obsidian LLM Wiki knowledge bases, load and follow:
-`~/.openclaw/skills/llm-wiki-toolchain/SKILL.md`.
-
-Resolve linked files relative to that directory, especially:
-- scripts/init.py
-- scripts/lint.py
-- templates/
-- references/
-```
-
-## Hermes Agent
-
-For Hermes Agent, clone directly under the profile's skills directory:
-
-```bash
-mkdir -p ~/.hermes/skills/note-taking
-git clone https://github.com/mixgreen/llm-wiki-toolchain.git ~/.hermes/skills/note-taking/llm-wiki-toolchain
-```
-
-Then in a new Hermes session the skill should be available as:
-
-```text
-skill_view(name='llm-wiki-toolchain')
-```
-
-If using a named Hermes profile, use that profile's skill directory instead:
-
-```bash
-mkdir -p ~/.hermes/profiles/<profile>/skills/note-taking
-git clone https://github.com/mixgreen/llm-wiki-toolchain.git ~/.hermes/profiles/<profile>/skills/note-taking/llm-wiki-toolchain
-```
-
-## Initialize a new wiki
-
-```bash
-python3 scripts/init.py "<vault-or-parent-path>" "<wiki-name>" --topic "<topic>"
-```
-
-Example:
-
-```bash
-python3 ~/.hermes/skills/note-taking/llm-wiki-toolchain/scripts/init.py \
-  "$HOME/Documents" "My LLM Wiki" --topic "AI research notes"
-```
-
-## Run lint
-
-```bash
-python3 scripts/lint.py "<wiki-root>"
-python3 scripts/lint.py "<wiki-root>" --json
-python3 scripts/lint.py "<wiki-root>" --pages "wiki/concepts/PageA.md,wiki/topics/PageB.md"
-python3 scripts/lint.py "<wiki-root>" --stale
-python3 scripts/lint.py "<wiki-root>" --tags
-```
-
-## Update
-
-Pull the latest version from GitHub:
-
-```bash
-cd ~/.hermes/skills/note-taking/llm-wiki-toolchain  # or your chosen install path
-git pull
-```
-
-## Structure
-
-```text
-.
-├── SKILL.md
+├── SKILL.md              # 完整工作流文档（agent 运行时读取）
+├── install.sh            # 交互式安装脚本
+├── bin/install.js        # npx 入口
 ├── scripts/
-│   ├── init.py
-│   └── lint.py
-├── templates/
-│   ├── SCHEMA.md
-│   ├── index.md
-│   ├── log.md
-│   ├── topic-map.md
-│   └── page-templates/
-└── references/
+│   ├── init.py           # Wiki 初始化
+│   └── lint.py           # 自动化健康检查（13 项）
+├── templates/            # 页面和结构模板
+│   └── page-templates/   # entity / concept / topic / comparison / query
+└── references/           # 设计决策、模式参考、踩坑记录
 ```
 
-## Config file reference
+## 许可证
 
-Quick lookup for where to put the skill loader note in each CLI:
-
-| CLI | Install path | Instruction file |
-|-----|-------------|-----------------|
-| Claude Code | `~/.claude/skills/llm-wiki-toolchain/` | `CLAUDE.md` (project root or `~/.claude/CLAUDE.md`) |
-| Gemini CLI | `~/.gemini/skills/llm-wiki-toolchain/` | `GEMINI.md` (project root or global context) |
-| Codex CLI | `~/.codex/skills/llm-wiki-toolchain/` | `AGENTS.md` (project root or `~/.codex/AGENTS.md`) |
-| OpenClaw | `~/.openclaw/skills/llm-wiki-toolchain/` | `OPENCLAW.md` (project root or global config) |
-| Hermes Agent | `~/.hermes/skills/note-taking/llm-wiki-toolchain/` | Auto-discovered; load with `skill_view(name='llm-wiki-toolchain')` |
-
-## Notes
-
-This repository is a skill package, not a standalone Python package. It is intended to be consumed by agent systems that can read instruction files plus supporting scripts/templates.
-
-The exact global instruction file differs between agent CLIs and user setups. If your local Claude/Gemini/Codex configuration uses a different instruction path, keep the clone command and adapt only the loader note path.
+MIT

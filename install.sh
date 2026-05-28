@@ -58,7 +58,12 @@ download_skill() {
   else
     warn "git not found, falling back to curl..."
     curl -fsSL "${REPO%.git}/archive/refs/heads/main.tar.gz" | tar xz -C "$tmpdir"
-    mv "$tmpdir"/*/  "$tmpdir/src" 2>/dev/null || true
+    # GitHub archives extract as <repo>-<branch>/, rename to src/
+    mv "$tmpdir"/llm-wiki-toolchain-*/ "$tmpdir/src" || {
+      rm -rf "$tmpdir"
+      err "Failed to extract archive"
+      exit 1
+    }
   fi
 
   # Clean non-essential files
@@ -218,13 +223,14 @@ main() {
     exit 1
   fi
 
+  # Set up cleanup trap before download (safe even if CLEANUP_DIR is empty)
+  CLEANUP_DIR=""
+  trap '[ -n "$CLEANUP_DIR" ] && rm -rf "$CLEANUP_DIR"' EXIT
+
   # 下载
   local src
   src=$(download_skill)
-  
-  # 设置清理目录（用于 trap）
   CLEANUP_DIR="$(dirname "$src")"
-  trap 'rm -rf "$CLEANUP_DIR"' EXIT
 
   echo "" >&2
 
@@ -251,7 +257,7 @@ main() {
   echo -e "${GREEN}${BOLD}  Done! ${SKILL_NAME} installed.${NC}" >&2
   echo -e "${BOLD}└─────────────────────────────────────────┘${NC}" >&2
   echo "" >&2
-  info "Update later: cd <install-path> && git pull"
+  info "Update later: re-run this installer or clone the repo with git"
   echo "" >&2
 }
 

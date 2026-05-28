@@ -42,13 +42,17 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
 
 
-def parse_frontmatter(content: str) -> tuple[dict[str, Any], str, bool]:
-    """Very small YAML-ish parser sufficient for linting simple frontmatter."""
-    match = FRONTMATTER_RE.match(content)
-    if not match:
-        return {}, content, False
-    raw = match.group(1)
-    body = content[match.end():]
+try:
+    import yaml
+    _HAS_YAML = True
+except ImportError:
+    _HAS_YAML = False
+
+
+def _parse_frontmatter_fallback(raw: str) -> dict[str, Any]:
+    """Line-level parser for environments without PyYAML.
+    Supports: scalars, booleans, null, single-line lists. Does NOT support
+    multi-line values, nested objects, or commas inside quoted list items."""
     data: dict[str, Any] = {}
     for line in raw.splitlines():
         if not line.strip() or line.lstrip().startswith("#"):
@@ -69,6 +73,26 @@ def parse_frontmatter(content: str) -> tuple[dict[str, Any], str, bool]:
             data[key] = [] if not inner else [x.strip().strip('"\'') for x in inner.split(",")]
         else:
             data[key] = value.strip('"\'')
+    return data
+
+
+def parse_frontmatter(content: str) -> tuple[dict[str, Any], str, bool]:
+    """Parse YAML frontmatter. Uses PyYAML when available, falls back to a
+    line-level parser that handles the common subset used by LLM Wiki pages."""
+    match = FRONTMATTER_RE.match(content)
+    if not match:
+        return {}, content, False
+    raw = match.group(1)
+    body = content[match.end():]
+    if _HAS_YAML:
+        try:
+            data = yaml.safe_load(raw)
+            if not isinstance(data, dict):
+                data = {}
+        except yaml.YAMLError:
+            data = _parse_frontmatter_fallback(raw)
+    else:
+        data = _parse_frontmatter_fallback(raw)
     return data, body, True
 
 
@@ -88,6 +112,7 @@ def unique_pages(page_map: dict[str, Path]) -> list[Path]:
 
 
 def find_wiki_pages(wiki_root: Path, include_archive: bool = False) -> dict[str, Path]:
+    """Build a map of page stem -> Path. Case-insensitive lookup uses a separate key."""
     pages: dict[str, Path] = {}
     search_roots = []
     wiki_dir = wiki_root / "wiki"
@@ -100,7 +125,10 @@ def find_wiki_pages(wiki_root: Path, include_archive: bool = False) -> dict[str,
         for md in root.rglob("*.md"):
             stem = md.stem
             pages[stem] = md
-            pages[stem.lower()] = md
+            # Only store lowercase fallback if it doesn't collide with an exact-match entry
+            lower = stem.lower()
+            if lower not in pages:
+                pages[lower] = md
     return pages
 
 
@@ -273,6 +301,7 @@ def check_raw_integrity(wiki_root: Path) -> list[dict]:
                 "issue": "sha256_mismatch",
                 "recorded": recorded,
                 "actual": actual,
+                "note": "sha256 is computed on body content (after frontmatter), not the entire file",
             })
     return issues
 
@@ -504,7 +533,23 @@ def format_report(results: dict) -> str:
         lines.append("")
 
     section("页面质量信号", results.get("quality"), "页面 frontmatter / 质量信号通过", lambda q: f"- ⚠️ [[{q['page']}]] `{q['path']}` — {q['issue']}" + (f"（{q.get('value')}）" if 'value' in q else ""))
-    section("raw 完整性", results.get("raw_integrity"), "raw/ sha256 检查通过", lambda r: f"- ⚠️ `{r['path']}` — {r['issue']}")
+
+    raw_items = results.get("raw_integrity")
+    if raw_items is not None:
+        lines.append("## raw 完整性")
+        lines.append("")
+        lines.append("> 注：sha256 是对 body 内容（去掉 YAML frontmatter 后）计算的，不是整个文件。")
+        lines.append("")
+        if raw_items:
+            has_issues = True
+            for r in raw_items:
+                lines.append(f"- ⚠️ `{r['path']}` — {r['issue']}")
+            lines.append(f"")
+            lines.append(f"**共 {len(raw_items)} 项**")
+        else:
+            lines.append("✅ raw/ sha256 检查通过")
+        lines.append("")
+
     section("页面大小", results.get("oversized_pages"), "未发现超过 200 行的页面", lambda p: f"- 📄 [[{p['page']}]] `{p['path']}` — {p['lines']} 行（建议拆分）")
     section("过时候选页", results.get("stale_pages"), "未发现超过阈值的过时候选页", lambda p: f"- 🕰️ [[{p['page']}]] `{p['path']}` — updated={p['updated']}，{p['age_days']} 天未更新")
     section("标签审计", results.get("tag_audit"), "所有 tags 均在 taxonomy 中", lambda t: f"- 🏷️ [[{t.get('page', 'SCHEMA')}]] `{t.get('path', '')}` — {t['issue']}" + (f"：{t.get('tag')}" if t.get('tag') else ""))
