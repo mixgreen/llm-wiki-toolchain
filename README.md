@@ -92,6 +92,30 @@ Read the skill before acting. Supporting scripts and templates are relative to:
 `~/.codex/skills/llm-wiki-toolchain/`.
 ```
 
+## OpenClaw
+
+Recommended location:
+
+```bash
+mkdir -p ~/.openclaw/skills
+git clone https://github.com/mixgreen/llm-wiki-toolchain.git ~/.openclaw/skills/llm-wiki-toolchain
+```
+
+Then add a loader note to your OpenClaw instructions file (typically `OPENCLAW.md` in project root or global config):
+
+```markdown
+## Agent skills
+
+When working with Obsidian LLM Wiki knowledge bases, load and follow:
+`~/.openclaw/skills/llm-wiki-toolchain/SKILL.md`.
+
+Resolve linked files relative to that directory, especially:
+- scripts/init.py
+- scripts/lint.py
+- templates/
+- references/
+```
+
 ## Hermes Agent
 
 For Hermes Agent, clone directly under the profile's skills directory:
@@ -162,6 +186,18 @@ git pull
 │   └── page-templates/
 └── references/
 ```
+
+## Config file reference
+
+Quick lookup for where to put the skill loader note in each CLI:
+
+| CLI | Install path | Instruction file |
+|-----|-------------|-----------------|
+| Claude Code | `~/.claude/skills/llm-wiki-toolchain/` | `CLAUDE.md` (project root or `~/.claude/CLAUDE.md`) |
+| Gemini CLI | `~/.gemini/skills/llm-wiki-toolchain/` | `GEMINI.md` (project root or global context) |
+| Codex CLI | `~/.codex/skills/llm-wiki-toolchain/` | `AGENTS.md` (project root or `~/.codex/AGENTS.md`) |
+| OpenClaw | `~/.openclaw/skills/llm-wiki-toolchain/` | `OPENCLAW.md` (project root or global config) |
+| Hermes Agent | `~/.hermes/skills/note-taking/llm-wiki-toolchain/` | Auto-discovered; load with `skill_view(name='llm-wiki-toolchain')` |
 
 ## Notes
 
