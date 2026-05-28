@@ -223,9 +223,8 @@ main() {
   src="$(download_skill)"
 
   # Clean up temp dir on exit
-  local cleanup_dir
-  cleanup_dir="$(dirname "$src")"
-  trap 'rm -rf "$cleanup_dir"' EXIT
+  CLEANUP_DIR="$(dirname "$src")"
+  trap 'rm -rf "$CLEANUP_DIR"' EXIT
 
   echo "" >&2
 
