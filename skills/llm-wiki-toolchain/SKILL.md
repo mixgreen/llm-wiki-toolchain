@@ -266,7 +266,33 @@ python3 <SKILL_DIR>/scripts/ingest_plan.py "<wiki-root>" "<source>" [更多来�
 
 3. **综合回答。** 用 [[wikilinks]] 标注引用来源。
 
-4. **询问是否归档。** 如果回答有价值，问："需要把这份分析归档为新的 wiki 页面吗？" 如果同意，写入 `wiki/topics/` 或 `wiki/concepts/` 并更新 index。
+4. **判断是否值得归档为 Query Archive。** 当回答满足任一条件时，询问是否归档：
+   - 复用了多个 wiki 页面或 raw 证据
+   - 产生了可复用综合判断、对比、取舍或路线建议
+   - 未来很可能重复被问，重新推导成本高
+   - 暴露了明确的 wiki 后续动作
+   - 用户明确说"记下来""保存""以后还会用"
+
+   普通单页查找或临时问答不需要打扰用户归档。
+
+5. **Archive Confirmation。** 归档前在聊天中展示轻量确认，不做单独 Query Plan。至少包括：
+   - Query Archive Title
+   - 目标位置：默认 `wiki/queries/<标题>.md`
+   - 是否进入 `index.md`（默认 `indexed: true`）
+   - `answer_version`
+   - status / confidence
+   - Basis Pages
+   - Raw Evidence 是否必需且齐全
+   - Follow-Up Actions
+   - 新建还是更新已有 Query Archive
+
+6. **写入 Query Archive。** 用户确认后，默认写入 `wiki/queries/`。只有明确转换为稳定概念、实体、对比或主题页时，才写入 `wiki/concepts/`、`wiki/entities/`、`wiki/comparisons/` 或 `wiki/topics/`。
+
+7. **更新已有归档优先。** 新建前先查 `wiki/queries/` 中的精确标题、显式 alias、原始问题或 Canonical Question。相同问题的新证据或新结论应更新已有页并递增 Answer Version；模糊相似需要用户确认。
+
+8. **更新 index.md 和 log.md。** `indexed: true` 的 Query Archive 默认进入 index 的 Queries 区块。创建或实质更新 Query Archive 时追加 Query Log Entry；只有格式、错别字和轻微措辞修订不需要记录。
+
+> 详细规则见 `references/query-archive-workflow.md`。V1 不新增脚本、不创建单独 Query Plan、不自动编辑 Basis Pages，也不默认把聊天回答复制到 `raw/`。
 
 输出格式（询问用户偏好）：
 - Markdown 页面（默认）
@@ -438,10 +464,13 @@ superseded_by: [[新页面名]]
 - 章节：比较对象、比较维度、表格分析、结论、未解决问题、来源
 - 多来源对比页强烈建议使用段落级溯源
 
-### 查询归档页（`query.md`）
+### Query Archive（`query.md`）
 - 建议位置：`wiki/queries/`
-- 用途：保存值得复用的综合回答、研究结论、临时分析
-- 不要归档琐碎查询；只保存未来重新推导成本高的回答
+- 用途：保存 Archive-Worthy Query 的可复用回答、证据链和后续动作
+- 前置元数据：tags、created、updated、status、confidence、answer_version、indexed、basis_pages
+- 必填内容：原始问题、Canonical Question、答案摘要、综合回答、Basis Pages、Follow-Up Actions、修订记录
+- 条件内容：强 claim、争议判断、数值、论文结论或纠错必须补 Raw Evidence；关键排除判断可写 Review Notes
+- 不要归档琐碎查询；不要默认把聊天回答复制进 `raw/`
 
 ### 主题地图（`topic-map.md`）
 - 位置：`_meta/topic-map.md`

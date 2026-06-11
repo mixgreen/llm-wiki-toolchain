@@ -20,4 +20,4 @@
 
 ## Queries
 
-<!-- Format: - QueryPage — reusable query/synthesis result (YYYY-MM-DD). Use real wikilinks only for actual entries. -->
+<!-- Format: - QueryPage — what this answer resolves (v1, reviewed/medium; basis: [[Page A]], [[Page B]]). Use real wikilinks only for actual indexed query archives. -->

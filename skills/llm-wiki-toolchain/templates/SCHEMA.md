@@ -91,9 +91,14 @@ sha256: <hex digest of body content>
 
 ### Query Pages (`wiki/queries/`)
 
-- Frontmatter: `tags: [query, <subtopic>]`, `created`, `updated`, `status`, optional `confidence`.
-- Save only valuable answers that would be painful to re-derive.
-- Include original question, synthesized answer, source pages, and follow-up actions.
+- Frontmatter: `tags: [query, <subtopic>]`, `created`, `updated`, `status`, `confidence`, `answer_version`, `indexed`, `basis_pages`.
+- Default status is `reviewed`; default confidence is `medium`. Use `draft` / `low` for exploratory archives and usually set `indexed: false`.
+- Query Archives live in `wiki/queries/` by default. Convert to concepts, entities, comparisons, or topics only when deliberately reshaping the answer into a stable page type.
+- Basis Pages are required for every Query Archive and should state what each page contributed.
+- Raw Evidence is required for strong claims, disputed judgments, numeric details, paper conclusions, or corrections to existing wiki knowledge.
+- Follow-Up Actions use only `[open]`, `[done]`, and `[dropped]`.
+- Answer Version is stored in `answer_version`. Increment it only when new evidence, correction, or follow-up work materially changes the answer. Formatting and typo fixes do not increment it.
+- Set `indexed: false` for scratch, private, low-confidence, or explicitly unindexed archives.
 
 ## Paragraph-Level Provenance
 
@@ -183,7 +188,11 @@ Use when the user says “批量 / 一批 / 这些文件 / 整个目录” or eq
 - Always read `index.md` first to locate relevant pages.
 - For larger wikis, also use `search_files` over wiki pages.
 - Cite source pages with `[[wikilinks]]`.
-- Offer to file valuable answers as new pages in `wiki/queries/` or `wiki/comparisons/`.
+- Offer Archive Confirmation for Archive-Worthy Queries: answers that reuse multiple pages or raw evidence, produce reusable synthesis, are likely to be asked again, reveal follow-up work, or the user asks to keep.
+- Default to saving approved Query Archives in `wiki/queries/`.
+- Before creating a new Query Archive, check for exact title, explicit alias, or clearly same Original Question / Canonical Question.
+- Use a Comparison Upgrade only when the user explicitly wants a long-lived comparison page; otherwise record it as a Follow-Up Action.
+- Do not save chat answers into `raw/` by default. Query Archives cite Basis Pages, and strong claims cite Raw Evidence.
 
 ## Index and Topic Map
 

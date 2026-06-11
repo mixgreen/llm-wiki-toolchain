@@ -7,6 +7,13 @@
   - Updated: [[page3]], [[page4]]
   - Key additions: brief note
 
+  Query archive example:
+  ## [YYYY-MM-DD] query | Query Archive Title
+  - Created/Updated: [[Query Archive Title]]
+  - answer_version: 1
+  - Basis Pages: [[Page A]], [[Page B]]
+  - Follow-Up Actions: 2 open
+
   Parse with: grep "^## \[" log.md | tail -10
 
   Rotation policy:

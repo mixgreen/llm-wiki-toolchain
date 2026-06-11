@@ -1,6 +1,6 @@
 {
   "name": "llm-wiki-toolchain",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Agent skill for Obsidian-based LLM Wiki knowledge bases",
   "bin": {
     "llm-wiki-toolchain": "./bin/install.js"

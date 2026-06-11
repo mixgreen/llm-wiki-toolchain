@@ -99,3 +99,79 @@ _Avoid_: topic, idea
 **Claim**:
 A concrete assertion from a source that may support, revise, or contradict existing wiki knowledge. A Claim is evidence-bearing but is not a default standalone page; it requires a source excerpt or locator to be included in an Ingest Plan.
 _Avoid_: fact, note, quote
+
+**Query Archive**:
+A saved wiki page for a reusable answer to a user or research question, preserving how the answer was derived. Its default location is `wiki/queries/`; only answers that have been deliberately converted into stable concepts, entities, comparisons, or broader topic pages should leave that directory.
+_Avoid_: saved answer, query note, topic page
+
+**Archive-Worthy Query**:
+A query whose answer is worth offering to preserve as a Query Archive. A query is archive-worthy when it reuses multiple wiki pages or raw evidence, produces a reusable synthesis or decision, is likely to be asked again, reveals wiki follow-up work, or the user explicitly asks to keep it.
+_Avoid_: valuable answer, important query
+
+**Answer Version**:
+The version number of a Query Archive's substantive answer. It starts at 1 when archived and increments only when new evidence, correction, or follow-up work materially changes the answer; formatting, copy edits, and typo fixes do not increment it.
+_Avoid_: page version, package version
+
+**Basis Page**:
+A wiki page that materially supports a Query Archive answer. Basis Pages are required for every Query Archive and should state what each page contributed to the answer.
+_Avoid_: related page, citation
+
+**Raw Evidence**:
+The raw source evidence behind a strong or consequential Query Archive claim. Raw Evidence is required when the answer includes strong claims, disputed judgments, numeric details, paper conclusions, or corrections to existing wiki knowledge.
+_Avoid_: source, reference
+
+**Indexed Query Archive**:
+A Query Archive that is discoverable through `index.md` and treated as a current knowledge entry. Query Archives are indexed by default unless they are scratch, private, low-confidence, or explicitly kept out of the index.
+_Avoid_: listed answer, public query
+
+**Follow-Up Action**:
+A proposed next maintenance or research step recorded by a Query Archive, such as creating a concept page, updating an entity, rereading raw evidence, upgrading to a comparison, or running an Ingest Plan. Follow-Up Actions are not executed automatically during query archiving.
+_Avoid_: todo, next step, automatic update
+
+**Follow-Up Action Status**:
+The lightweight state of a Follow-Up Action in a Query Archive. Valid states are open, done, and dropped; Query Archives do not track owners, due dates, or project-management priority.
+_Avoid_: task status, priority
+
+**Query Archive Title**:
+The reusable title of a Query Archive, written as the research question or answer domain rather than the user's raw chat phrasing. The original user question is preserved inside the page body.
+_Avoid_: chat title, raw question as filename
+
+**Canonical Question**:
+The reusable form of the question that a Query Archive answers after compressing multi-turn context. It may differ from the user's raw wording but must preserve the actual intent.
+_Avoid_: rewritten prompt, final prompt
+
+**Question Context**:
+The minimal background needed to understand a Query Archive's Canonical Question when the answer depends on multi-turn conversation. It excludes unrelated chat, confirmation noise, and exploratory detours.
+_Avoid_: chat transcript, conversation history
+
+**Comparison Upgrade**:
+The deliberate conversion of a Query Archive into a long-lived comparison page when the answer's main value is maintaining a reusable side-by-side matrix. It is recorded as a Follow-Up Action unless the user explicitly asks to create the comparison page now.
+_Avoid_: automatic comparison, query comparison
+
+**Query Evidence Chain**:
+The provenance path for a Query Archive: the query page cites Basis Pages, and strong claims cite Raw Evidence through those pages or direct locators. Query Archives do not create raw copies of the chat answer by default.
+_Avoid_: chat raw, answer source
+
+**Review Note**:
+An optional note in a Query Archive explaining important search or judgment context, such as why a page was not used or why a source was considered out of scope. It is not a complete search log.
+_Avoid_: search log, audit trail
+
+**Query Log Entry**:
+The `log.md` entry for creating or materially updating a Query Archive. It records the query title, whether the page was created or updated, the Answer Version, Basis Pages, and Follow-Up Action count.
+_Avoid_: activity note, query history
+
+**Archive Confirmation**:
+The lightweight confirmation shown before writing a Query Archive. It summarizes title, destination, index status, Answer Version, Basis Pages, Raw Evidence readiness, Follow-Up Actions, status, and confidence; it is not a separate plan artifact.
+_Avoid_: query plan, archive plan
+
+**Query Archive Match**:
+The conservative match used before creating a Query Archive. Exact title, explicit alias, or clearly same original question may update an existing Query Archive; fuzzy thematic similarity requires confirmation and may remain a linked separate page.
+_Avoid_: duplicate query, similar answer
+
+**Query Archive Metadata**:
+The required frontmatter and body fields that make a Query Archive reusable: status, confidence, Answer Version, index status, Basis Pages, original question, answer summary, synthesized answer, Follow-Up Actions, and revision notes, with Raw Evidence and Review Notes added when required.
+_Avoid_: query template fields, archive fields
+
+**Query Archive Workflow**:
+The first-class workflow for preserving Archive-Worthy Query answers as wiki knowledge. V1 is documentation- and template-led, with no separate script; it writes the Query Archive, updates index when indexed, and records a Query Log Entry after Archive Confirmation.
+_Avoid_: query script, saved chat workflow
