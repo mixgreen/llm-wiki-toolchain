@@ -12,6 +12,7 @@ Creates:
     ├── wiki/concepts/
     ├── wiki/topics/
     ├── wiki/comparisons/
+    ├── wiki/readings/
     ├── wiki/queries/
     ├── _archive/
     ├── _meta/topic-map.md
@@ -84,6 +85,7 @@ def init_wiki(vault_path: Path, wiki_name: str, topic: str = "") -> dict:
         "wiki/concepts",
         "wiki/topics",
         "wiki/comparisons",
+        "wiki/readings",
         "wiki/queries",
         "_archive",
         "_meta",
@@ -170,7 +172,8 @@ Examples:
     print("   1. Review and customize SCHEMA.md for your domain")
     print(f"   2. Add source documents to {result['wiki_name']}/raw/ with sha256 metadata")
     print("   3. Use single-source ingest for important sources, batch ingest for directories")
-    print("   4. Open _meta/topic-map.md to sketch major reading routes")
+    print("   4. Create Reading Guides in wiki/readings/ when you ask for detailed source interpretation")
+    print("   5. Open _meta/topic-map.md to sketch major reading routes")
 
 
 if __name__ == "__main__":

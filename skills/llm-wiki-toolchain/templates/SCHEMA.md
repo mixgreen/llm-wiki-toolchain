@@ -18,6 +18,7 @@
 │   ├── concepts/             # Ideas, theories, frameworks, techniques
 │   ├── topics/               # Broader synthesis pages, source summaries, domain overviews
 │   ├── comparisons/          # Side-by-side analyses and trade-off comparisons
+│   ├── readings/             # Detailed reading guides for papers, long articles, and reports
 │   └── queries/              # Filed query results worth preserving
 ├── _archive/                 # Archived wiki pages; ignored by lint unless explicitly included
 ├── _meta/
@@ -88,6 +89,17 @@ sha256: <hex digest of body content>
 - Frontmatter: `tags: [comparison, <subtopic>]`, `created`, `updated`, `status`, optional `confidence`.
 - Sections: Comparison Objects, Dimensions, Table, Synthesis/Verdict, Open Questions, Sources.
 - Strongly prefer paragraph-level provenance.
+
+### Reading Guide Pages (`wiki/readings/`)
+
+- Frontmatter: `tags: [reading, <subtopic>]`, `created`, `updated`, `source_title`, `source_type`, `source_url`, `source_summary`, `raw_path`, `raw_sha256`, `status`, `confidence`, `indexed`.
+- Use for papers, long articles, and reports when the user explicitly asks for detailed interpretation, close reading, or help understanding the source's logic.
+- Reading Guides coexist with Source Summary pages and should link to the Source Summary when one exists.
+- Source Summary pages should link back to a Reading Guide when one exists.
+- Reading Guides are indexed by default in the Readings section of `index.md`.
+- Reading Guides do not require paragraph-level provenance in V1.
+- Strong claims, numeric details, paper conclusions, disputed judgments, and corrections should point back to the Source Summary or raw evidence.
+- Do not put agent-authored Reading Guides in `raw/`, and do not treat them as the primary evidence source for stable wiki claims.
 
 ### Query Pages (`wiki/queries/`)
 
@@ -163,7 +175,7 @@ After the report, ask the user to choose proceed / narrow / revise. Do not write
 4. Pre-scan the existing wiki with `search_files` to detect existing pages.
 5. Ask for Plan Approval before writing.
 6. Save raw source with `sha256` metadata when writing to `raw/`.
-7. Create/update source summary, entity, concept, topic, comparison, or query pages as appropriate.
+7. Create/update source summary, entity, concept, topic, comparison, reading, or query pages as appropriate.
 8. Update `index.md`.
 9. Append to `log.md`.
 10. Run focused lint for the pages touched by this ingest; report only new issues involving those pages.

@@ -18,6 +18,10 @@
 
 <!-- Format: - ComparisonPage — what is compared and why (YYYY-MM-DD). Use real wikilinks only for actual entries. -->
 
+## Readings
+
+<!-- Format: - ReadingGuidePage — detailed guide for <source type>; source summary: [[Source Summary]] (YYYY-MM-DD). Use real wikilinks only for actual indexed reading guides. -->
+
 ## Queries
 
 <!-- Format: - QueryPage — what this answer resolves (v1, reviewed/medium; basis: [[Page A]], [[Page B]]). Use real wikilinks only for actual indexed query archives. -->

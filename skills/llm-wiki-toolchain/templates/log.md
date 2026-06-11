@@ -14,6 +14,13 @@
   - Basis Pages: [[Page A]], [[Page B]]
   - Follow-Up Actions: 2 open
 
+  Reading guide example:
+  ## [YYYY-MM-DD] reading | Reading Guide Title
+  - Created/Updated: [[Reading Guide Title]]
+  - Source Summary: [[Source Summary Title]]
+  - Source: <source title>
+  - Evidence boundary: strong claims route to Source Summary/raw
+
   Parse with: grep "^## \[" log.md | tail -10
 
   Rotation policy:
@@ -25,5 +32,5 @@
 ## [<YYYY-MM-DD>] init | Wiki created
 
 - Created: index.md, log.md, SCHEMA.md, _meta/topic-map.md
-- Directory structure: raw/, wiki/entities/, wiki/concepts/, wiki/topics/, wiki/comparisons/, wiki/queries/, _archive/, _meta/
+- Directory structure: raw/, wiki/entities/, wiki/concepts/, wiki/topics/, wiki/comparisons/, wiki/readings/, wiki/queries/, _archive/, _meta/
 - Key additions: Initialized LLM Wiki for <WIKI_NAME>

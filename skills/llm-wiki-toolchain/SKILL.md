@@ -1,6 +1,6 @@
 ---
 name: llm-wiki-toolchain
-description: 在 Obsidian 中创建和维护 LLM Wiki 仓库——摄入来源、查询知识、知识健康审查、管理索引与日志。基于 Karpathy 的 LLM Wiki 模式。
+description: 在 Obsidian 中创建和维护 LLM Wiki 仓库——摄入来源、详细解读、查询知识、知识健康审查、管理索引与日志。基于 Karpathy 的 LLM Wiki 模式。
 ---
 
 # LLM Wiki 工具链
@@ -19,6 +19,7 @@ description: 在 Obsidian 中创建和维护 LLM Wiki 仓库——摄入来源�
 │   ├── concepts/             # 概念：理论、框架、方法、技术等
 │   ├── topics/               # 主题：来源摘要、综述、领域概览
 │   ├── comparisons/          # 横向对比分析：A vs B、方案比较、技术取舍
+│   ├── readings/             # 详细解读：论文、长文章、报告的讲解稿
 │   └── queries/              # 值得留存的查询结果、综合回答、临时研究结论
 ├── _archive/                 # 归档页面：过时、重复、被替代页面；默认 lint 忽略
 ├── _meta/
@@ -34,6 +35,7 @@ description: 在 Obsidian 中创建和维护 LLM Wiki 仓库——摄入来源�
 
 - 在用户的 Obsidian vault 中搭建新的研究/学习 wiki
 - 向已有 wiki 摄入新来源（论文、文章、书籍章节）
+- 为论文、长文章或报告创建详细解读 Reading Guide
 - 通过综合 wiki 知识来回答问题
 - 对 wiki 进行机械健康检查和 Semantic Lint 知识健康审查
 
@@ -60,7 +62,7 @@ python3 <SKILL_DIR>/scripts/init.py "<vault路径>" "<wiki名称>" [--topic "主
 > `<SKILL_DIR>` 是本 skill 的安装目录。安装脚本会将实际路径写入各 agent 的指令文件中。
 
 init 脚本会：
-1. 创建目录结构（raw/、wiki/entities、wiki/concepts、wiki/topics、wiki/comparisons、wiki/queries、_archive、_meta）
+1. 创建目录结构（raw/、wiki/entities、wiki/concepts、wiki/topics、wiki/comparisons、wiki/readings、wiki/queries、_archive、_meta）
 2. 从模板播种 `index.md`、`log.md`、`SCHEMA.md`、`_meta/topic-map.md`
 3. 输出创建报告
 
@@ -255,6 +257,41 @@ python3 <SKILL_DIR>/scripts/ingest_plan.py "<wiki-root>" "<source>" [更多来�
    - 如果发现问题，输出警告列表并建议修复
 
    实现方式：lint.py 增加 `--pages "page1,page2,..."` 参数，只检查指定页面的问题。ingest 流程在步骤 10 调用 `lint.py <wiki-root> --pages <本次涉及的页面>`。
+
+## 详细解读：Reading Guide
+
+当用户明确要求"详细解读"、"精读"、"讲透这篇论文"、"帮我理清这篇文章逻辑"或等价表达时，创建或更新 **Reading Guide**。普通 ingest 不自动创建 Reading Guide。
+
+Reading Guide 是保存到 `wiki/readings/` 的讲解型页面，适用于论文、长文章和报告。它帮助人顺着来源逻辑读懂内容；Source Summary 继续承担短摘要、索引入口和证据锚点职责。Reading Guide 不写入 `raw/`，也不替代 `wiki/topics/` 下的 Source Summary。
+
+创建前先执行三步：
+
+1. 读 `SCHEMA.md`、`index.md` 和近期 `log.md`。
+2. 找到对应 Source Summary 和 raw 资料；如果 Source Summary 不存在，先按 ingest 流程创建或确认是否需要创建。
+3. 检查是否已有 Reading Guide。只有相同 raw sha256、相同 source_url、显式 Source Summary 链接或显式 alias 可直接视为同一 guide；标题相似但证据不足时必须确认。
+
+默认命名为 `<来源标题> - Reading Guide.md`，默认位置为 `wiki/readings/`。已有匹配 guide 时默认更新原页面，不新建日期碎片。
+
+Reading Guide 正文以讲解稿为主，不强制逐节复述。通常覆盖：
+
+- 这篇来源想解决什么问题
+- 为什么这个问题重要
+- 核心思想或主张
+- 方法、系统或论证结构
+- 关键结果说明了什么
+- trade-off 和局限
+- 和已有 wiki 知识或后续工作的关系
+- 读完后应该记住什么
+
+V1 不要求段落级 provenance。强 claim、数值、论文结论、争议判断和纠错必须引导读者回到 Source Summary 或 raw evidence；不要把 Reading Guide 当作稳定实体、概念或主题 claim 的主要证据。
+
+写入后：
+
+- Reading Guide 链接 Source Summary；Source Summary 也补充 Reading Guide 链接。
+- `indexed: true` 的 Reading Guide 默认进入 `index.md` 的 Readings 区块。
+- 创建或实质更新 Reading Guide 时追加 log entry；格式、错别字和轻微措辞调整不需要记录。
+
+> 详细规则见 `references/reading-guide-workflow.md`。V1 不新增生成脚本、不在普通 ingest 中自动创建 Reading Guide，也不把 agent 解读写入 `raw/`。
 
 ## 查询：搜索与综合
 
@@ -485,6 +522,14 @@ superseded_by: [[新页面名]]
 - 必填内容：原始问题、Canonical Question、答案摘要、综合回答、Basis Pages、Follow-Up Actions、修订记录
 - 条件内容：强 claim、争议判断、数值、论文结论或纠错必须补 Raw Evidence；关键排除判断可写 Review Notes
 - 不要归档琐碎查询；不要默认把聊天回答复制进 `raw/`
+
+### Reading Guide（`reading-guide.md`）
+- 建议位置：`wiki/readings/`
+- 用途：保存论文、长文章和报告的详细解读，帮助人顺着来源逻辑读懂内容
+- 前置元数据：tags、created、updated、source_title、source_type、source_url、source_summary、raw_path、raw_sha256、status、confidence、indexed
+- 必填内容：阅读入口、核心讲解、关键结果、trade-off 与局限、和 wiki 的关系、读后 takeaway
+- 证据边界：Reading Guide 不要求段落级 provenance；强 claim、数值、论文结论、争议判断和纠错应回到 Source Summary 或 raw evidence
+- 不要在普通 ingest 中自动创建；不要写入 `raw/`；不要替代 Source Summary
 
 ### 主题地图（`topic-map.md`）
 - 位置：`_meta/topic-map.md`

@@ -2,12 +2,13 @@
 
 > [中文](../README.md)
 
-Agent skill for managing Obsidian-based LLM Wiki knowledge bases. Provides structured ingestion, linting, querying, and archive workflows for AI coding agents.
+Agent skill for managing Obsidian-based LLM Wiki knowledge bases. Provides structured ingestion, detailed reading guides, linting, querying, and archive workflows for AI coding agents.
 
 ## Features
 
-- Structured page types: entities, concepts, topics, comparisons, queries
+- Structured page types: entities, concepts, topics, comparisons, readings, queries
 - Pre-write Ingest Plan reports for source identity, page impact, and drift risk
+- Reading Guide workflow for saving detailed explanations of papers, long articles, and reports in `wiki/readings/`
 - Query Archive workflow for preserving reusable answers in `wiki/queries/`
 - Raw source integrity (SHA-256 on body content)
 - Automated lint: orphans, broken links, index consistency, tag audit, staleness
@@ -86,6 +87,8 @@ python3 <install-path>/scripts/ingest_plan.py ~/Documents/MyVault/research-wiki 
 The Ingest Plan command only prints a report. It does not write to `raw/`, `wiki/`, `index.md`, or `log.md`.
 
 In agent chat, ask to save a reusable answer as a Query Archive when it should feed back into `wiki/queries/`.
+
+Ask for a Reading Guide when you want a detailed explanation or close reading saved in `wiki/readings/`. Ordinary ingest does not create Reading Guides automatically.
 
 Ask for Semantic Lint when you want an LLM-assisted knowledge health review. It returns structured findings for confirmation, not deterministic lint errors or automatic fixes.
 

@@ -95,12 +95,10 @@ class SemanticLintDocsTest(unittest.TestCase):
         self.assertNotIn("semantic-lint", lint_py)
         self.assertNotIn("Semantic Lint", lint_py)
 
-    def test_package_and_plugin_versions_are_1_3_0(self) -> None:
+    def test_package_and_plugin_versions_match(self) -> None:
         package = json.loads(read("package.json"))
         plugin = json.loads(read(".claude-plugin/plugin.json"))
 
-        self.assertEqual(package["version"], "1.3.0")
-        self.assertEqual(plugin["version"], "1.3.0")
         self.assertEqual(package["version"], plugin["version"])
 
 

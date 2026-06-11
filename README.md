@@ -6,7 +6,7 @@
 
 [English](./docs/README.en.md) · [安装](#安装) · [快速开始](#快速开始) · [工作流](#工作流) · [项目结构](#项目结构)
 
-![version](https://img.shields.io/badge/version-1.3.0-blue)
+![version](https://img.shields.io/badge/version-1.4.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![python](https://img.shields.io/badge/python-3.x-3776AB)
 ![obsidian](https://img.shields.io/badge/Obsidian-ready-7C3AED)
@@ -16,7 +16,7 @@
 
 ---
 
-`llm-wiki-toolchain` 是一个 agent skill, 用来把“读论文 / 文章 / 笔记 → 提取知识 → 交叉引用 → 持续维护”的过程沉淀成可演进的 Obsidian wiki。
+`llm-wiki-toolchain` 是一个 agent skill, 用来把“读论文 / 文章 / 笔记 → 详细解读 → 提取知识 → 交叉引用 → 持续维护”的过程沉淀成可演进的 Obsidian wiki。
 
 它基于 [Karpathy 的 LLM Wiki 模式](https://x.com/karpathy/status/1881417542127472796), 但更强调可验证的工作流: 写入前先计划, 查询后可归档, 机械 lint 和 Semantic Lint 知识健康审查分层运行。
 
@@ -25,6 +25,7 @@
 | 你想要 | Toolchain 提供 |
 |---|---|
 | 摄入论文、文章、URL、本地笔记 | Ingest Plan 先审阅来源身份、页面影响、重复和漂移风险 |
+| 想顺着论文逻辑读懂全文 | Reading Guide 将详细解读保存到 `wiki/readings/` |
 | 让 wiki 能回答问题 | Agent 先读 `index.md` 和相关页面, 再用 wikilink 引用回答 |
 | 把好问题留下来 | Query Archive 将可复用答案保存到 `wiki/queries/` |
 | 避免 wiki 变乱 | `lint.py` 检查孤页、断链、索引、raw hash、tag、stale、log、topic-map |
@@ -45,6 +46,8 @@ flowchart TB
   G --> H[运行机械 lint]
   H --> I[Semantic Lint 知识健康审查]
   I --> J[确认后的维护动作]
+  P[用户要求详细解读] --> Q[Reading Guide -> wiki/readings/]
+  Q --> G
   K[用户查询 wiki] --> L[综合回答]
   L --> M{值得复用?}
   M -->|是| N[Query Archive -> wiki/queries/]
@@ -57,6 +60,7 @@ flowchart TB
 |---|---|---|
 | 摄入 | 单来源精读和批量来源导入, 自动建立交叉引用 | `raw/`, `wiki/`, `index.md`, `log.md` |
 | 写入前计划 | 先输出 Ingest Plan, 再等待用户确认 | chat report / optional JSON |
+| 详细解读 | 为论文、长文章、报告保存讲解稿式 Reading Guide | `wiki/readings/*.md` |
 | 查询 | 综合 wiki 页面回答问题, 保留依据页面 | wikilink 引用 |
 | Query Archive | 将可复用答案归档为一等知识条目 | `wiki/queries/*.md` |
 | 自动 lint | 13 项机械健康检查 | terminal report / JSON |
@@ -149,6 +153,7 @@ python3 <安装路径>/scripts/init.py ~/Documents/MyVault "量子计算" --topi
 │   ├── concepts/         # 理论、框架、方法
 │   ├── topics/           # 来源摘要、领域概览
 │   ├── comparisons/      # 横向对比分析
+│   ├── readings/         # 详细解读、论文导读
 │   └── queries/          # 值得留存的查询结果
 ├── _archive/             # 归档页面
 ├── _meta/topic-map.md    # 主题导航图
@@ -184,6 +189,7 @@ python3 ... --pages "a.md,b.md" # 只检查指定页面
 ```text
 帮我摄入这篇论文到 wiki
 先给我这篇论文的 Ingest Plan
+帮我详细解读一下这篇论文
 wiki 里关于 XX 的内容有哪些?
 把这个回答归档成 Query Archive
 跑一下 lint 看看 wiki 健康状况
@@ -222,6 +228,7 @@ Resolve linked files relative to that directory:
 │   │   ├── ingest_plan.py        # 写入前摄入计划报告
 │   │   └── lint.py               # 自动化健康检查
 │   ├── templates/                # 页面和结构模板
+│   │   └── page-templates/       # entity / concept / topic / comparison / reading / query
 │   └── references/               # 设计决策、模式参考、踩坑记录
 ├── install.sh                    # 交互式安装脚本
 └── README.md

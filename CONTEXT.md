@@ -255,3 +255,23 @@ _Avoid_: full deep check, complete semantic scan
 **Mechanical Lint Signal**:
 A result from mechanical lint that may guide Semantic Lint review, such as stale pages, oversized pages, broken links, or missing contradiction metadata. It is input evidence, not a semantic conclusion.
 _Avoid_: semantic finding, lint proof
+
+**Reading Guide**:
+A saved wiki page that gives a narrative, human-readable explanation of a paper, long article, or report. It lives in `wiki/readings/`, helps the reader follow the source's argument, and does not replace the Source Summary or raw evidence.
+_Avoid_: detailed note, paper summary, raw interpretation
+
+**Reading Guide Workflow**:
+The explicit-request workflow for creating or updating a Reading Guide when the user asks for detailed interpretation, close reading, or help understanding a source. V1 is documentation- and template-led, with no generator script and no automatic creation during ordinary ingest.
+_Avoid_: automatic paper review, ingest summary, reading script
+
+**Reading Guide Match**:
+The conservative same-source match used before creating a new Reading Guide. Same raw sha256, same source URL, explicit Source Summary link, or explicit alias can update an existing guide; fuzzy title similarity requires confirmation.
+_Avoid_: duplicate reading, similar guide
+
+**Readings Index Entry**:
+The `index.md` entry that makes a Reading Guide discoverable under the Readings section without mixing it into Topics. It should point to the guide, name the source type, and link the Source Summary when available.
+_Avoid_: topic entry, source summary entry
+
+**Reading Evidence Boundary**:
+The rule that a Reading Guide helps comprehension but is not the primary evidence source for stable wiki claims. Strong claims, numeric details, paper conclusions, disputed judgments, and corrections should route readers back to Source Summary or raw evidence.
+_Avoid_: guide as proof, reading citation
