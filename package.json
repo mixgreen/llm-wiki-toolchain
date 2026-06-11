@@ -5,6 +5,9 @@
   "bin": {
     "llm-wiki-toolchain": "./bin/install.js"
   },
+  "scripts": {
+    "test": "python3 -m unittest discover -s tests"
+  },
   "keywords": [
     "obsidian",
     "llm-wiki",

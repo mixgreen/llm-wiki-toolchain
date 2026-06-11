@@ -124,30 +124,59 @@ Use this for:
 
 ## Ingest Workflow
 
+### Ingest Plan Gate
+
+Meaningful ingest work starts with an Ingest Plan before any writes. The plan is a chat-rendered report only; it must not create, update, archive, delete, or overwrite `raw/`, `wiki/`, `index.md`, or `log.md`.
+
+Use Ingest Plan for papers, articles, PDFs, URLs, external local files, and batch sources. Tiny Note Exception: a small pasted note may be captured directly only when the user explicitly asks for direct capture. Papers, articles, PDFs, URLs, and batch sources cannot use this exception.
+
+An Ingest Plan contains:
+
+- Source Summary: source type, readiness, identity, proposed Raw Destination.
+- Candidate Knowledge Items: Entity, Concept, Claim.
+- Page Impact: source summary page impact separated from Entity/Concept/Claim candidates.
+- Risks and Confirmations.
+- Recommended Next Step.
+
+Allowed page operations are `create`, `update`, `merge`, `skip`, and `needs-confirmation`. `archive` is not an Ingest Plan operation.
+
+Existing Page Match is conservative: exact page stem, exact `[[wikilink]]`, or explicit alias only. Fuzzy, translated, spacing-different, and filename-similar matches require confirmation.
+
+Source identity rules:
+
+- Same `sha256`: same source.
+- Same `source_url` with different `sha256`: source drift; ask for confirmation.
+- Similar filenames: weak duplicate hint only.
+
+After the report, ask the user to choose proceed / narrow / revise. Do not write until the user approves the plan.
+
 ### Single-source ingest
 
-1. Read the source.
-2. Extract candidate entities/concepts.
-3. Pre-scan the existing wiki with `search_files` to detect existing pages.
-4. Present a plan to the user when there are ambiguous matches or broad updates.
-5. Save raw source with `sha256` metadata when writing to `raw/`.
-6. Create/update source summary, entity, concept, topic, comparison, or query pages as appropriate.
-7. Update `index.md`.
-8. Append to `log.md`.
-9. Run focused lint for the pages touched by this ingest; report only new issues involving those pages.
+1. Generate an Ingest Plan and present it in chat.
+2. Read the source.
+3. Extract candidate Entity, Concept, and Claim items.
+4. Pre-scan the existing wiki with `search_files` to detect existing pages.
+5. Ask for Plan Approval before writing.
+6. Save raw source with `sha256` metadata when writing to `raw/`.
+7. Create/update source summary, entity, concept, topic, comparison, or query pages as appropriate.
+8. Update `index.md`.
+9. Append to `log.md`.
+10. Run focused lint for the pages touched by this ingest; report only new issues involving those pages.
 
 ### Batch ingest
 
 Use when the user says “批量 / 一批 / 这些文件 / 整个目录” or equivalent.
 
-1. Read all sources first.
-2. Identify all entities/concepts across the batch.
-3. Search existing wiki once for all candidates.
-4. Present an ingest plan: raw files, new pages, updated pages, risk/ambiguity.
-5. If the batch touches more than 10 wiki pages, confirm scope before writing.
-6. Create/update pages in one pass.
-7. Update `index.md` and `log.md` once.
-8. Run focused lint for touched pages.
+1. Generate an Ingest Plan before writing.
+2. If the batch has more than five sources or more than ten impacted pages, recommend narrowing scope.
+3. Read all approved sources.
+4. Identify all Entity, Concept, and Claim candidates across the batch.
+5. Search existing wiki once for all candidates.
+6. Present source-to-wiki impact, risk, and ambiguity.
+7. Ask for Plan Approval before writing.
+8. Create/update pages in one pass.
+9. Update `index.md` and `log.md` once.
+10. Run focused lint for touched pages.
 
 ## Query Conventions
 

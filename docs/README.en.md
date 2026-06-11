@@ -7,6 +7,7 @@ Agent skill for managing Obsidian-based LLM Wiki knowledge bases. Provides struc
 ## Features
 
 - Structured page types: entities, concepts, topics, comparisons, queries
+- Pre-write Ingest Plan reports for source identity, page impact, and drift risk
 - Raw source integrity (SHA-256 on body content)
 - Automated lint: orphans, broken links, index consistency, tag audit, staleness
 - Archive policies and topic maps
@@ -61,6 +62,7 @@ When working with Obsidian LLM Wiki knowledge bases, load and follow:
 Resolve linked files relative to that directory:
 - scripts/init.py
 - scripts/lint.py
+- scripts/ingest_plan.py
 - templates/
 - references/
 ```
@@ -73,7 +75,13 @@ python3 <install-path>/scripts/init.py ~/Documents/MyVault "research-wiki" --top
 
 # Run lint
 python3 <install-path>/scripts/lint.py ~/Documents/MyVault/research-wiki
+
+# Generate a no-write Ingest Plan before approved ingest
+python3 <install-path>/scripts/ingest_plan.py ~/Documents/MyVault/research-wiki ./paper-notes.md
+python3 <install-path>/scripts/ingest_plan.py ~/Documents/MyVault/research-wiki ./paper-notes.md --json
 ```
+
+The Ingest Plan command only prints a report. It does not write to `raw/`, `wiki/`, `index.md`, or `log.md`.
 
 For full workflow documentation (ingestion, querying, seeding, archive management), see `SKILL.md`.
 
@@ -95,6 +103,7 @@ re-run the installer
 ├── bin/install.js        # npx entry point (delegates to install.sh)
 ├── scripts/
 │   ├── init.py           # Wiki initialization
+│   ├── ingest_plan.py    # No-write pre-ingest planning report
 │   └── lint.py           # Automated health checks
 ├── templates/            # Page and structure templates
 └── references/           # Design decisions and patterns

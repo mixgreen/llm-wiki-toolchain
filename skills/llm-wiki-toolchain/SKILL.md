@@ -157,26 +157,48 @@ toolchain 支持两种摄入模式：
 | **单来源摄入** | 默认 | 重要论文、核心文档、需要用户判断重点的资料 |
 | **批量摄入** | 用户明确说"批量/一批/这些文件/整个目录"时启用 | 同类资料、目录归档、源码资料、历史资料导入 |
 
+### Ingest Plan：写入前的默认关口
+
+对论文、文章、PDF、URL、外部本地文件和批量来源, 默认先输出 **Ingest Plan Report**, 等用户明确确认后再写 `raw/`、`wiki/`、`index.md` 或 `log.md`。Ingest Plan 只做计划和审阅, 不创建、不更新、不归档、不删除任何 wiki 文件。
+
+本地来源可先运行只读脚本生成确定性骨架：
+
+```bash
+python3 <SKILL_DIR>/scripts/ingest_plan.py "<wiki-root>" "<source>" [更多来源]
+```
+
+脚本只负责来源身份、readiness、raw 目标建议、已有页面保守匹配和过载提示。随后由 agent 在聊天中完成语义审阅：抽取 Entity、Concept、Claim, 并补充每项为什么应该写入或更新。Claim 必须带来源摘录或定位; Entity/Concept 必须带理由。
+
+报告至少包含：Source Summary、Candidate Knowledge Items、Page Impact、Risks and Confirmations、Recommended Next Step。论文来源还要补 Paper Lens：research question、method、main contribution、limitations、follow-up value。
+
+允许的页面操作只有 `create`、`update`、`merge`、`skip`、`needs-confirmation`。`archive` 不是 Ingest Plan 操作。已有页面匹配采用保守规则：只有精确 page stem、精确 `[[wikilink]]` 或 frontmatter 显式 alias 可直接视为 update; 空格差异、翻译差异、大小写/文件名相似都需要确认。
+
+当来源超过 5 个或预计影响超过 10 个 wiki 页面时, 标记为 overload-prone review, 优先建议缩小范围。v1 不做跨来源综合, 只解释 Source-to-Wiki Impact。
+
+只有一个例外：Tiny Note Exception。用户明确要求直接记录一小段粘贴笔记时, 可以跳过完整 Ingest Plan; 论文、文章、PDF、URL 和批量来源不能使用这个例外。
+
+详细字段和边界见 `references/ingest-plan-workflow.md`。
+
 批量摄入规则：
-1. 先读所有来源，整体识别实体、概念和更新范围。
-2. 写入前先输出摄入计划：raw 文件列表、预计新增页面、预计更新页面、风险页面。
-3. 如果预计触及超过 10 个 wiki 页面，必须确认范围。
+1. 先生成 Ingest Plan, 明确 raw 文件列表、预计新增页面、预计更新页面、风险页面。
+2. 先读所有来源，整体识别实体、概念和更新范围。
+3. 如果预计触及超过 10 个 wiki 页面，必须确认范围；超过 5 个来源也应建议缩小范围。
 4. 最后统一更新 `index.md` 和 `log.md`，避免重复写导航。
 
 当用户要向 wiki 添加单个新来源时，按以下步骤操作：
 
-0. **预扫描（Pre-scan）。** 读完来源后，提取所有候选实体/概念，对每个候选执行 `search_files` 全库搜索，生成摄入计划表格：
+0. **Ingest Plan。** 先输出写入前计划报告。对于本地来源, 优先运行 `scripts/ingest_plan.py` 生成确定性骨架; 对 URL 或需提取文本的来源, 在报告中说明 readiness 和 raw 目标建议。读完来源后，提取所有候选 Entity/Concept/Claim，对每个候选执行 `search_files` 全库搜索，生成页面影响表格：
 
    ```
-   | 实体/概念     | 状态       | 匹配页面           | 操作     |
+   | 候选项         | 类型       | 状态       | 匹配页面           | 操作     |
    |---------------|-----------|-------------------|---------|
-   | MS门          | 已存在     | ms-gate.md        | 更新     |
-   | 量子纠错       | 已存在     | quantum-ec.md     | 更新     |
-   | 某某新算法     | 未找到     | —                 | 新建     |
-   | 某人名         | 模糊匹配   | 某某.md?          | 确认     |
+   | MS门          | Entity    | 已存在     | ms-gate.md        | update |
+   | 量子纠错       | Concept   | 已存在     | quantum-ec.md     | update |
+   | 某某新算法     | Concept   | 未找到     | —                 | create |
+   | 某个关键结论   | Claim     | 需定位     | 来源第 3 节        | needs-confirmation |
    ```
 
-   用 clarify() 展示表格，让用户确认或调整后批量执行。这一步是为了避免重复创建已有页面（a 问题）和漏更新应该更新的页面（b 问题）。
+   在聊天中展示报告，让用户选择 proceed / narrow / revise 后再执行。这一步是为了避免重复创建已有页面（a 问题）和漏更新应该更新的页面（b 问题）。
 
 1. **读取来源。** 如果来源在 raw/ 中，优先用 pymupdf（`python3 -c "import pymupdf; ..."`）提取 PDF 文本，用 read_file 读取 markdown。如果是 URL，用 web_extract 或 browser。如果是图片，用 vision_analyze。如果 pymupdf 不可用，退而用 `pdftotext`。
 

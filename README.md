@@ -11,7 +11,7 @@
 ```
 用户提供来源（论文/文章/笔记）
         ↓
-Agent 读取 → 提取实体和概念 → 创建/更新 wiki 页面
+Ingest Plan 审阅 → Agent 读取 → 提取实体和概念 → 创建/更新 wiki 页面
         ↓
 自动交叉引用、更新索引、追加日志
         ↓
@@ -21,6 +21,7 @@ Agent 读取 → 提取实体和概念 → 创建/更新 wiki 页面
 **核心能力：**
 
 - **摄入** — 单来源精读或批量导入，自动建立交叉引用
+- **计划** — 写入前输出 Ingest Plan，预先暴露来源身份、页面影响、重复/漂移风险
 - **查询** — 综合 wiki 知识回答问题，有价值的回答归档为新页面
 - **检查** — 13 项自动化 lint（孤页、断链、索引一致性、标签审计、过时检测等）
 - **播种** — 在摄入来源前先搭建知识骨架
@@ -128,11 +129,23 @@ python3 ... --stale             # 过时页面（>90天未更新）
 python3 ... --pages "a.md,b.md" # 只检查指定页面
 ```
 
-### 3. 开始使用
+### 3. 生成写入前计划
+
+对论文、文章、PDF、URL、外部文件和批量来源，先让 agent 输出 Ingest Plan；本地来源也可以直接运行只读脚本：
+
+```bash
+python3 <安装路径>/scripts/ingest_plan.py ~/Documents/MyVault/量子计算 ./paper-notes.md
+python3 <安装路径>/scripts/ingest_plan.py ~/Documents/MyVault/量子计算 ./paper-notes.md --json
+```
+
+该命令只输出报告，不会写入 `raw/`、`wiki/`、`index.md` 或 `log.md`。确认计划后，再执行正式摄入。
+
+### 4. 开始使用
 
 安装完成后，在 agent 会话中直接说：
 
 - "帮我摄入这篇论文到 wiki"
+- "先给我这篇论文的 Ingest Plan"
 - "wiki 里关于 XX 的内容有哪些？"
 - "跑一下 lint 看看 wiki 健康状况"
 - "帮我搭建一个关于 YY 的知识骨架"
@@ -152,6 +165,7 @@ When working with Obsidian LLM Wiki knowledge bases, load and follow:
 Resolve linked files relative to that directory:
 - scripts/init.py
 - scripts/lint.py
+- scripts/ingest_plan.py
 - templates/
 - references/
 ```
@@ -174,6 +188,7 @@ cd <安装路径> && git pull
 │   ├── SKILL.md                  # 完整工作流文档（agent 运行时读取）
 │   ├── scripts/
 │   │   ├── init.py               # Wiki 初始化
+│   │   ├── ingest_plan.py        # 写入前摄入计划报告（只读）
 │   │   └── lint.py               # 自动化健康检查（13 项）
 │   ├── templates/                # 页面和结构模板
 │   │   └── page-templates/       # entity / concept / topic / comparison / query
