@@ -1,6 +1,6 @@
 ---
 name: llm-wiki-toolchain
-description: 在 Obsidian 中创建和维护 LLM Wiki 仓库——摄入来源、查询知识、质量检查、管理索引与日志。基于 Karpathy 的 LLM Wiki 模式。
+description: 在 Obsidian 中创建和维护 LLM Wiki 仓库——摄入来源、查询知识、知识健康审查、管理索引与日志。基于 Karpathy 的 LLM Wiki 模式。
 ---
 
 # LLM Wiki 工具链
@@ -35,7 +35,7 @@ description: 在 Obsidian 中创建和维护 LLM Wiki 仓库——摄入来源�
 - 在用户的 Obsidian vault 中搭建新的研究/学习 wiki
 - 向已有 wiki 摄入新来源（论文、文章、书籍章节）
 - 通过综合 wiki 知识来回答问题
-- 对 wiki 进行健康检查：发现矛盾、孤页、缺失
+- 对 wiki 进行机械健康检查和 Semantic Lint 知识健康审查
 
 本 skill 依赖 `obsidian` skill 提供底层 vault CRUD 操作，使用时一并加载。
 
@@ -336,35 +336,49 @@ python3 <SKILL_DIR>/scripts/lint.py "<wiki-root>" --json
 
 > **iCloud 死锁（`errno 11`）**：iCloud 目录中的文件可能处于 dataless 状态——stat 报告文件大小但数据未本地化。读取时抛 `OSError: [Errno 11] Resource deadlock avoided`。详见 `references/icloud-dataless-workaround.md`。遇到此错误时，先 `brctl download` 逐个拉取文件，再运行 lint。不要用 Python 重试循环——必须主动触发 `brctl download`。
 
-### 手动深度检查
+### Semantic Lint：知识健康审查
 
-以下项目需要 LLM 的语义理解，暂未自动化：
+Semantic Lint 是 LLM-assisted knowledge health review，用来发现机械 lint 无法可靠判断的语义问题。它补充 `lint.py`，但不是 `lint.py` 的替代品；V1 不提供 `semantic_lint.py`，不添加 `lint.py --semantic`，也没有语义 exit-code 语义。
 
-1. **矛盾。** 扫描 wiki 页面中的矛盾声明，用 clarify() 标注。存在矛盾时，页面应使用 `contested: true` 和 `contradictions: [...]`。
+默认使用 **Focused Semantic Lint**：审查用户指定页面、近期 ingest/query 触及页面，或机械 lint 报出的少量候选页面。只有用户明确要求主题级审查时才使用 **Topic Semantic Lint**；只有小型 wiki 或用户坚持时才使用 **Wiki-Wide Semantic Lint**，并先提醒它容易造成确认过载。
 
-2. **孤页。** 没有被其他 wiki 页面 [[wikilink]] 引用的页面。列出报告。
+Semantic Lint 可以读取自动检查结果作为 Mechanical Lint Signal，例如 stale pages、过大页面、断链、质量字段缺失、tag audit 或 index/log/topic-map 问题。但这些只是审查线索，不是语义结论。`--stale` 报告的是 **Stale Page**，即 `updated` 超过阈值；只有读过页面、新来源或 log 后，才能提出 **Stale Claim Candidate**。
 
-3. **缺失页面。** 在多处被提及但缺少独立页面的重要概念。建议创建。
+Semantic Lint Finding 的类型限定为：
 
-4. **过时声明。** 可能被新来源取代的旧声明。查看 log.md 中近期摄入，判断是否影响旧页面。
+1. **Contradiction Candidate**：页面之间或页面内部疑似有不兼容声明、定义、数字或状态判断。
+2. **Missing Page Candidate**：多处出现且重要的实体或概念缺少独立页面。
+3. **Stale Claim Candidate**：既有声明可能已被较新来源、近期 log 或来源摘要取代。
+4. **Weak Evidence Candidate**：强声明缺少 Basis Pages、Raw Evidence 或段落级 provenance。
+5. **Index Summary Drift**：`index.md` 摘要与当前页面内容不再匹配。
+6. **Overgrown Page Candidate**：页面积累了多个语义主题，可能需要拆分、重构或转换类型。
 
-5. **断链。** 指向不存在页面的 [[wikilinks]]。
+每条 Semantic Lint Finding 必须包含：
 
-6. **索引新鲜度。** 验证所有 wiki 页面都在 index.md 中出现且摘要准确。
+- `type`
+- `title`
+- `affected_pages`
+- `evidence`
+- `confidence`
+- `severity`
+- `recommended_action`
+- `rationale`
+- `confirmation_question`
 
-7. **raw 完整性。** 检查 `raw/` 文件是否带 `sha256`，并识别哈希不匹配导致的来源漂移。
+`confidence` 表示判断可靠度，`severity` 表示若成立对 wiki 的影响程度；两者必须分开判断。
 
-8. **质量信号。** 报告 `confidence: low`、`contested: true`、缺失必要质量字段的页面。
+Semantic Lint Report 默认只在聊天中输出，不保存为 wiki artifact。报告结构：
 
-9. **过时候选页。** 报告 `updated` 距今超过阈值（默认 90 天）的页面，提醒是否需要复核。
+- Summary
+- High Severity Findings
+- Medium / Low Severity Findings
+- Confirmation Queue
+- Suggested Maintenance Actions
+- Machine Data（可选）
 
-10. **标签审计。** 对照 SCHEMA.md 的 Tag Taxonomy，报告未定义却被使用的 tag。
+Semantic Lint 不自动修改 wiki。确认后的 Suggested Maintenance Actions 才进入普通维护流程，例如更新页面、创建页面、补 Raw Evidence、拆分页面、更新 `index.md`、运行 Ingest Plan，或在分析本身可复用时走 Query Archive。普通 findings 不默认归档为 Query Archive。
 
-11. **归档排除。** 默认忽略 `_archive/`；只有用户明确要求时检查归档内容。
-
-12. **日志轮转。** 检查 `log.md` 是否跨年或超过 500 条记录。
-
-以结构化列表形式报告发现，附建议。
+详细模板和边界见 `references/semantic-lint-workflow.md`。
 
 ## 索引管理
 

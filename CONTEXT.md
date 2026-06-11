@@ -175,3 +175,83 @@ _Avoid_: query template fields, archive fields
 **Query Archive Workflow**:
 The first-class workflow for preserving Archive-Worthy Query answers as wiki knowledge. V1 is documentation- and template-led, with no separate script; it writes the Query Archive, updates index when indexed, and records a Query Log Entry after Archive Confirmation.
 _Avoid_: query script, saved chat workflow
+
+**Semantic Lint**:
+An LLM-assisted knowledge health review that finds semantic issues in a wiki, such as contradictions, missing pages, stale claims, weak evidence, and index summary drift. It complements mechanical lint and produces structured findings for confirmation rather than directly modifying the wiki.
+_Avoid_: deep check, manual lint, automatic lint
+
+**Semantic Lint Finding**:
+A structured item from Semantic Lint that describes a possible knowledge health issue, its evidence, affected pages, confidence, and recommended next action. It is a confirmation candidate, not an automatic write.
+_Avoid_: lint error, issue, warning
+
+**Semantic Lint Report**:
+The chat-rendered report that groups Semantic Lint Findings by type, confidence, affected pages, and recommended confirmation path. It may have a machine-readable mirror, but its primary purpose is human review.
+_Avoid_: semantic scan output, deep check report
+
+**Ephemeral Semantic Lint Report**:
+A Semantic Lint Report that is shown in chat and not saved as a wiki artifact by default. Its confirmed findings should become normal wiki maintenance work rather than permanent report pages.
+_Avoid_: saved lint report, wiki audit page
+
+**Semantic Lint Workflow**:
+The agent-led workflow for producing a Semantic Lint Report. V1 is documentation- and template-led, with no separate script and no exit-code semantics; confirmed findings may trigger normal wiki maintenance actions later.
+_Avoid_: semantic lint command, deep check script
+
+**Contradiction Candidate**:
+A Semantic Lint Finding where two pages, or two parts of one page, appear to make incompatible claims, definitions, numbers, or status judgments.
+_Avoid_: contradiction error, conflict
+
+**Missing Page Candidate**:
+A Semantic Lint Finding where an entity or concept is important enough for the wiki but lacks its own page.
+_Avoid_: broken link, new page todo
+
+**Stale Claim Candidate**:
+A Semantic Lint Finding where an existing claim may have been superseded by newer sources, recent log entries, or updated source summaries.
+_Avoid_: stale page, old text
+
+**Stale Page**:
+A mechanically stale page whose `updated` date is older than the configured threshold. A Stale Page is a review prompt from mechanical lint, not proof that any specific claim is wrong.
+_Avoid_: stale claim, outdated knowledge
+
+**Weak Evidence Candidate**:
+A Semantic Lint Finding where a strong or consequential claim lacks adequate Basis Pages, Raw Evidence, or paragraph-level provenance.
+_Avoid_: missing citation, unsupported note
+
+**Index Summary Drift**:
+A Semantic Lint Finding where an `index.md` summary no longer matches the current page content or has become misleading.
+_Avoid_: stale index entry, bad summary
+
+**Overgrown Page Candidate**:
+A Semantic Lint Finding where a page has accumulated multiple semantic topics or responsibilities and may need splitting, restructuring, or conversion to a different page type.
+_Avoid_: long page, oversized page
+
+**Semantic Lint Finding Shape**:
+The required structure of a Semantic Lint Finding: type, title, affected pages, evidence, confidence, severity, recommended action, rationale, and confirmation question. Confidence and severity are separate judgments.
+_Avoid_: finding format, issue schema
+
+**Confirmation Queue**:
+The section of a Semantic Lint Report that collects the questions a user or reviewer must answer before any wiki maintenance action is taken.
+_Avoid_: questions list, manual review
+
+**Suggested Maintenance Action**:
+A proposed follow-up action from Semantic Lint, such as updating a page, creating a page, adding evidence, splitting a page, updating index, or running an Ingest Plan. Suggested Maintenance Actions are not executed automatically.
+_Avoid_: auto fix, remediation step
+
+**Semantic Lint Confirmation**:
+The user or reviewer decision required before a Semantic Lint Finding becomes wiki maintenance work. Semantic Lint does not auto-fix pages.
+_Avoid_: auto-apply, semantic lint fix
+
+**Focused Semantic Lint**:
+A Semantic Lint run scoped to specified pages or pages touched by a recent ingest or query. It is the default scope because it keeps human review manageable.
+_Avoid_: partial deep check, small semantic lint
+
+**Topic Semantic Lint**:
+A Semantic Lint run scoped to a topic, tag, concept cluster, or index section. It is used for thematic review without scanning the whole wiki.
+_Avoid_: category scan, topic audit
+
+**Wiki-Wide Semantic Lint**:
+A Semantic Lint run across the whole wiki. It is reserved for small wikis or explicit user requests and should warn when review is likely overload-prone.
+_Avoid_: full deep check, complete semantic scan
+
+**Mechanical Lint Signal**:
+A result from mechanical lint that may guide Semantic Lint review, such as stale pages, oversized pages, broken links, or missing contradiction metadata. It is input evidence, not a semantic conclusion.
+_Avoid_: semantic finding, lint proof

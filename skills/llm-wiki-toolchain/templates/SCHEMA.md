@@ -194,6 +194,23 @@ Use when the user says “批量 / 一批 / 这些文件 / 整个目录” or eq
 - Use a Comparison Upgrade only when the user explicitly wants a long-lived comparison page; otherwise record it as a Follow-Up Action.
 - Do not save chat answers into `raw/` by default. Query Archives cite Basis Pages, and strong claims cite Raw Evidence.
 
+## Semantic Lint Conventions
+
+Semantic Lint is an LLM-assisted knowledge health review, not an automatic replacement for `lint.py`. It produces structured confirmation candidates before any maintenance write.
+
+Use Semantic Lint for semantic issues that mechanical lint cannot prove:
+
+- Contradiction Candidate
+- Missing Page Candidate
+- Stale Claim Candidate
+- Weak Evidence Candidate
+- Index Summary Drift
+- Overgrown Page Candidate
+
+Mechanical lint output is Mechanical Lint Signal. It may guide review, but it is not a semantic finding by itself. A Stale Page means `updated` is older than the threshold; a Stale Claim Candidate means a specific claim may be superseded by newer evidence.
+
+Each Semantic Lint finding should include type, title, affected pages, evidence, confidence, severity, recommended action, rationale, and confirmation question. Confidence and severity are separate. Do not update, create, split, or archive pages from Semantic Lint until the finding is confirmed.
+
 ## Index and Topic Map
 
 - `index.md` is the complete catalog of current pages.

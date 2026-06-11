@@ -16,6 +16,8 @@ Ingest Plan 审阅 → Agent 读取 → 提取实体和概念 → 创建/更新 
 自动交叉引用、更新索引、追加日志
         ↓
 定期 lint 检查：孤页、断链、过时内容、标签一致性
+        ↓
+Semantic Lint 知识健康审查：输出矛盾、缺失、弱证据等待确认项
 ```
 
 **核心能力：**
@@ -24,6 +26,7 @@ Ingest Plan 审阅 → Agent 读取 → 提取实体和概念 → 创建/更新 
 - **计划** — 写入前输出 Ingest Plan，预先暴露来源身份、页面影响、重复/漂移风险
 - **查询** — 综合 wiki 知识回答问题，用 Query Archive 将可复用答案归档到 `wiki/queries/`
 - **检查** — 13 项自动化 lint（孤页、断链、索引一致性、标签审计、过时检测等）
+- **语义检查** — Semantic Lint 知识健康审查，输出矛盾候选、缺失页面候选、弱证据候选等结构化待确认项
 - **播种** — 在摄入来源前先搭建知识骨架
 - **归档** — 过时页面不删除，移入 `_archive/` 保留历史
 
@@ -149,6 +152,7 @@ python3 <安装路径>/scripts/ingest_plan.py ~/Documents/MyVault/量子计算 .
 - "wiki 里关于 XX 的内容有哪些？"
 - "把这个回答归档成 Query Archive"
 - "跑一下 lint 看看 wiki 健康状况"
+- "对最近改过的页面做一次 Semantic Lint"
 - "帮我搭建一个关于 YY 的知识骨架"
 
 Agent 会自动加载 `SKILL.md` 中的完整工作流指令。
