@@ -9,6 +9,7 @@ Agent skill for managing Obsidian-based LLM Wiki knowledge bases. Provides struc
 - Structured page types: entities, concepts, topics, comparisons, readings, queries
 - Pre-write Ingest Plan reports for source identity, page impact, and drift risk
 - Reading Guide workflow for saving detailed explanations of papers, long articles, and reports in `wiki/readings/`
+- Readable Wiki Page standard for improving prose while preserving raw evidence and source identifiers
 - Query Archive workflow for preserving reusable answers in `wiki/queries/`
 - Raw source integrity (SHA-256 on body content)
 - Automated lint: orphans, broken links, index consistency, tag audit, staleness

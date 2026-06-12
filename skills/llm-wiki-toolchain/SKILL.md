@@ -285,13 +285,44 @@ Reading Guide 正文以讲解稿为主，不强制逐节复述。通常覆盖：
 
 V1 不要求段落级 provenance。强 claim、数值、论文结论、争议判断和纠错必须引导读者回到 Source Summary 或 raw evidence；不要把 Reading Guide 当作稳定实体、概念或主题 claim 的主要证据。
 
+写作时默认执行 Readable Wiki Page pass。Reading Guide 必须像一个认真读过来源的人在解释文章逻辑，而不是把事实机械压缩成摘要。具体要求：
+
+- 每段只承担一个阅读任务：问题、机制、结果、局限、关联或开放问题。
+- 优先解释作者的论证路线：先做了什么、为什么这样做、这个结果能说明什么、还不能说明什么。
+- 去掉 AI 腔套话，例如 "highlight/underscore/showcase/crucial/pivotal"、泛泛的 "it is important to note" 和空泛结论。
+- 不改写 direct quote、公式、代码、raw excerpt、source title、URL、hash、页码和文件路径。
+- 强 claim、数值、论文结论、争议判断和纠错只能润色表达，不能削弱证据指向。
+
 写入后：
 
 - Reading Guide 链接 Source Summary；Source Summary 也补充 Reading Guide 链接。
 - `indexed: true` 的 Reading Guide 默认进入 `index.md` 的 Readings 区块。
 - 创建或实质更新 Reading Guide 时追加 log entry；格式、错别字和轻微措辞调整不需要记录。
 
-> 详细规则见 `references/reading-guide-workflow.md`。V1 不新增生成脚本、不在普通 ingest 中自动创建 Reading Guide，也不把 agent 解读写入 `raw/`。
+> 详细规则见 `references/reading-guide-workflow.md` 和 `references/readable-wiki-page-standard.md`。V1 不新增生成脚本、不在普通 ingest 中自动创建 Reading Guide，也不把 agent 解读写入 `raw/`。
+
+## 可读性：Readable Wiki Page
+
+Readable Wiki Page 是 wiki 页面的默认写作标准，用来让页面更容易读，但不改变证据边界。它吸收 `humanizer` 的检查思路：删除 AI 腔、空泛意义提升、机械粗体、标题式列表、泛泛结论和 chatbot 残留；同时保留技术页面需要的朴素、准确和可追溯。
+
+按页面类型使用不同强度：
+
+- `wiki/readings/`：必做。详细解读应按来源逻辑讲清楚问题、方法、结果和局限。
+- `wiki/topics/` 来源摘要：轻量。保持短、可检索、证据导向。
+- `wiki/concepts/`、`wiki/entities/`、`wiki/comparisons/`：中等。提升段落清晰度，但稳定 claim 仍要靠来源。
+- `wiki/queries/`：中等。保留 Original Question 原貌，润色答案和后续动作。
+- `raw/`：不做。不可改写 immutable source、quoted evidence、公式、代码和 hash。
+- `index.md`、`log.md`、`_meta/topic-map.md`：只做格式与清晰度检查。
+
+写入前快速检查：
+
+1. 第一屏是否能让读者知道这页为什么值得读。
+2. 段落是否按读者理解顺序组织，而不是按模型想到什么组织。
+3. 是否存在 "stands as / serves as / highlights / underscores / crucial / pivotal / showcase" 等膨胀措辞。
+4. 是否把多个阅读任务塞进一个长段落。
+5. 是否误改了 raw evidence、引用、公式、代码、source identifiers 或 frontmatter 标识符。
+
+> 详细规则见 `references/readable-wiki-page-standard.md`。
 
 ## 查询：搜索与综合
 

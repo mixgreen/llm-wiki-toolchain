@@ -22,6 +22,7 @@ aliases: []
 ## 阅读入口
 
 <!-- 用 2-4 段说明这篇来源为什么值得读、读者应该带着什么问题进入。 -->
+<!-- 可读性要求：每段只承担一个任务，先帮助读者进入来源逻辑，不要写成泛泛的意义提升。 -->
 
 ## 这篇来源想解决什么问题
 
@@ -52,8 +53,17 @@ aliases: []
 ## 读后 takeaway
 
 <!-- 用几条自然语言总结读完后真正应该记住的东西。 -->
+<!-- 避免 generic positive conclusion。takeaway 应具体到这篇来源的判断、限制或后续问题。 -->
 
 - <!-- takeaway -->
+
+## Readability Pass
+
+- [ ] 每段只承担一个任务：问题、机制、结果、局限、关联或开放问题。
+- [ ] 第一屏给出了清楚的阅读入口。
+- [ ] 已去掉 AI 腔套话、泛泛意义提升、机械粗体和 chatbot 残留。
+- [ ] 没有改写 direct quote、公式、代码、raw excerpt、source title、URL、hash、页码或文件路径。
+- [ ] 强 claim、数值、论文结论、争议判断和纠错仍指向 Source Summary 或 raw evidence。
 
 ## Evidence Boundary
 

@@ -100,6 +100,19 @@ sha256: <hex digest of body content>
 - Reading Guides do not require paragraph-level provenance in V1.
 - Strong claims, numeric details, paper conclusions, disputed judgments, and corrections should point back to the Source Summary or raw evidence.
 - Do not put agent-authored Reading Guides in `raw/`, and do not treat them as the primary evidence source for stable wiki claims.
+- Apply a Readable Wiki Page pass before saving. Split overloaded paragraphs, follow the source's argument, remove AI-sounding filler, and preserve quotes, formulas, code, raw excerpts, hashes, URLs, page numbers, and file paths.
+
+## Readability Conventions
+
+Readable wiki pages should help a future reader understand the material without weakening evidence discipline.
+
+- Reading Guides require a readability pass.
+- Topic source summaries use a light pass; keep them short, searchable, and evidence-oriented.
+- Concept, entity, comparison, and query pages use a medium pass; improve paragraph clarity without loosening citations.
+- Raw sources are never humanized or rewritten.
+- Index, log, and topic-map pages receive only clarity and format cleanup.
+- Prefer one job per paragraph: problem, mechanism, result, limitation, relationship, or open question.
+- Avoid inflated significance language, generic positive conclusions, chatbot residue, mechanical boldface, and title-case headings when sentence-style headings are more natural.
 
 ### Query Pages (`wiki/queries/`)
 

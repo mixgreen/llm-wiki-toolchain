@@ -25,7 +25,7 @@
 | 你想要 | Toolchain 提供 |
 |---|---|
 | 摄入论文、文章、URL、本地笔记 | Ingest Plan 先审阅来源身份、页面影响、重复和漂移风险 |
-| 想顺着论文逻辑读懂全文 | Reading Guide 将详细解读保存到 `wiki/readings/` |
+| 想顺着论文逻辑读懂全文 | Reading Guide 将详细解读保存到 `wiki/readings/`，并默认做可读性润色 |
 | 让 wiki 能回答问题 | Agent 先读 `index.md` 和相关页面, 再用 wikilink 引用回答 |
 | 把好问题留下来 | Query Archive 将可复用答案保存到 `wiki/queries/` |
 | 避免 wiki 变乱 | `lint.py` 检查孤页、断链、索引、raw hash、tag、stale、log、topic-map |
@@ -61,6 +61,7 @@ flowchart TB
 | 摄入 | 单来源精读和批量来源导入, 自动建立交叉引用 | `raw/`, `wiki/`, `index.md`, `log.md` |
 | 写入前计划 | 先输出 Ingest Plan, 再等待用户确认 | chat report / optional JSON |
 | 详细解读 | 为论文、长文章、报告保存讲解稿式 Reading Guide | `wiki/readings/*.md` |
+| 可读性标准 | 让 wiki 页面更像给未来的自己写的解释，同时保护 raw evidence | Readable Wiki Page pass |
 | 查询 | 综合 wiki 页面回答问题, 保留依据页面 | wikilink 引用 |
 | Query Archive | 将可复用答案归档为一等知识条目 | `wiki/queries/*.md` |
 | 自动 lint | 13 项机械健康检查 | terminal report / JSON |

@@ -67,6 +67,23 @@ V1 does not require paragraph-level provenance, but the guide should point reade
 
 Use Source Summary and raw evidence when updating entity, concept, topic, or comparison pages. Do not cite Reading Guide alone as proof for stable claims.
 
+## Readability Pass
+
+Before saving or materially updating a Reading Guide, apply the Readable Wiki Page standard.
+
+The guide should explain how the source works as an argument. It should not merely compress facts into a longer summary.
+
+Required checks:
+
+- Each paragraph has one job: problem, mechanism, result, limitation, relationship, or open question.
+- The first screen gives the reader a usable entry point into the source.
+- The page follows the source's logic before listing details.
+- AI-sounding filler is removed, including inflated significance language, generic conclusions, and "let's dive in" style signposting.
+- Direct quotes, formulas, code blocks, raw excerpts, source identifiers, hashes, page numbers, and file paths are not rewritten.
+- Strong claims, numeric results, paper conclusions, disputed judgments, and corrections still point readers back to Source Summary or raw evidence.
+
+See `readable-wiki-page-standard.md` for the full page-type policy.
+
 ## Recommended Shape
 
 The guide should read like a lecture-style explanation rather than a fact card. Source-specific headings are allowed.
