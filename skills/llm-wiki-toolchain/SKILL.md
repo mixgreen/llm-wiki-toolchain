@@ -208,10 +208,11 @@ python3 <SKILL_DIR>/scripts/ingest_plan.py "<wiki-root>" "<source>" [更多来�
    - **本地文件**（PDF、markdown、图片）：复制到 `raw/<合理子目录>/`（如 `raw/papers/`、`raw/articles/`、`raw/notes/`）
    - **URL 来源**：将提取的文本保存为 `raw/web/<标题或域名>.md`
    - **用户口述/粘贴内容**：保存为 `raw/notes/<主题>.md`
-   - 所有 raw 文件必须带 frontmatter，包含 `sha256`（对 body 内容计算）、`source_url`（如有）、`source_type`、`ingested` 日期
+   - 文本 raw 文件必须带 frontmatter，包含 `sha256`（对 body 内容计算）、`source_url`（如有）、`source_type`、`ingested` 日期
+   - PDF、图片、音视频等 binary raw 文件保持本体不可变，不要为了 YAML frontmatter 重写文件；在相邻 `*.sha256` sidecar 中保存对整个 binary 文件计算的 sha256，例如 `raw/papers/example.pdf.sha256`
    - 如果来源已在 raw/ 中存在（通过文件名或 sha256 匹配），跳过此步
 
-   示例 frontmatter：
+   文本 raw 示例 frontmatter：
    ```yaml
    ---
    source_url: "https://arxiv.org/abs/2301.xxxxx"
@@ -221,9 +222,15 @@ python3 <SKILL_DIR>/scripts/ingest_plan.py "<wiki-root>" "<source>" [更多来�
    ---
    ```
 
+   Binary raw sidecar 示例：
+   ```text
+   raw/papers/example.pdf.sha256
+   <整个 PDF 文件的 hex digest>
+   ```
+
    > **这一步不可跳过。** 如果来源没有进入 raw/，wiki 页面就失去了可追溯性——未来无法验证声明来自哪里、无法重新摄入、无法检测来源漂移。
 
-   **raw/ 完整性要求：** raw/ 是不可变来源层，不应被直接覆盖或静默修改。重新摄入同一来源时，应重算哈希；若哈希不同，标记为来源漂移并让用户决定是否新建版本或更新 wiki 页面。
+   **raw/ 完整性要求：** raw/ 是不可变来源层，不应被直接覆盖或静默修改。重新摄入同一来源时，应重算哈希；若哈希不同，标记为来源漂移并让用户决定是否新建版本或更新 wiki 页面。`lint.py --raw` 会对缺少 sidecar 的 binary raw 报 `missing_sha256_sidecar`，对 sidecar 与文件内容不一致报 `sha256_mismatch`。
 
 3. **与用户讨论。** 预扫描确认后，用 clarify() 呈现关键要点。询问：
    - 哪些内容需要重点强调？

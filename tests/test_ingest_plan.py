@@ -24,6 +24,11 @@ def write(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def write_bytes(path: Path, content: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(content)
+
+
 def basic_wiki(root: Path) -> None:
     write(root / "index.md", "# Index\n\n- [[Existing Source]]\n- [[Agent沙盒安全模型]]\n")
     write(root / "log.md", "# Log\n")
@@ -71,6 +76,22 @@ class IngestPlanTest(unittest.TestCase):
             self.assertEqual(first["identity"]["status"], "new-source")
             self.assertTrue(first["sha256"])
             self.assertEqual(first["proposed_raw_destination"], "raw/notes/paper-notes.md")
+
+    def test_pdf_source_reports_sha256_sidecar_destination(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "wiki"
+            basic_wiki(root)
+            source = Path(tmp) / "paper.pdf"
+            write_bytes(source, b"%PDF-1.7\nbinary body\n\xff\n%%EOF")
+
+            plan = ingest_plan.build_plan(root, [str(source)])
+            markdown = ingest_plan.format_markdown(plan)
+
+            first = plan["sources"][0]
+            self.assertEqual(first["readiness"], "text-extractable")
+            self.assertEqual(first["proposed_raw_destination"], "raw/papers/paper.pdf")
+            self.assertEqual(first["proposed_sha256_sidecar"], "raw/papers/paper.pdf.sha256")
+            self.assertIn("Proposed sha256 Sidecar", markdown)
 
     def test_matching_raw_hash_is_already_present(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

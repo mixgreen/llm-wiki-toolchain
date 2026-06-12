@@ -35,11 +35,70 @@ VALID_CONFIDENCE = {"low", "medium", "high"}
 QUALITY_DIRS = {"concepts", "topics", "comparisons", "queries"}
 TAG_TAXONOMY_RE = re.compile(r"## Tag Taxonomy(?P<body>.*?)(?:\n## |\Z)", re.DOTALL | re.IGNORECASE)
 TAG_LIST_RE = re.compile(r"tags\s*:\s*\[([^\]]*)\]")
+SHA256_SIDECAR_SUFFIX = ".sha256"
+SHA256_HEX_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+SIDECAR_HASH_EXTENSIONS = {
+    ".pdf",
+    ".docx",
+    ".epub",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".ppt",
+    ".pptx",
+    ".mp4",
+    ".mov",
+    ".mp3",
+    ".wav",
+}
 
 
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def is_sha256_sidecar(path: Path) -> bool:
+    return path.name.endswith(SHA256_SIDECAR_SUFFIX)
+
+
+def sha256_sidecar_path(path: Path) -> Path:
+    return path.with_name(f"{path.name}{SHA256_SIDECAR_SUFFIX}")
+
+
+def should_use_sha256_sidecar(path: Path, text: str | None = "") -> bool:
+    return path.suffix.lower() in SIDECAR_HASH_EXTENSIONS or text is None
+
+
+def parse_sha256_sidecar(content: str) -> str | None:
+    """Return the first sha256 value from a sidecar file."""
+    for raw_line in content.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.lower().startswith("sha256:"):
+            value = line.split(":", 1)[1].strip()
+        else:
+            value = line.split()[0]
+        value = value.strip("\"'")
+        return value if SHA256_HEX_RE.fullmatch(value) else None
+    return None
+
+
+def read_sha256_sidecar(path: Path) -> tuple[str | None, str | None, Path]:
+    sidecar = sha256_sidecar_path(path)
+    if not sidecar.exists():
+        return None, "missing_sha256_sidecar", sidecar
+    try:
+        content = sidecar.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None, "unreadable_sha256_sidecar", sidecar
+    recorded = parse_sha256_sidecar(content)
+    if not recorded:
+        return None, "invalid_sha256_sidecar", sidecar
+    return recorded, None, sidecar
 
 
 try:
@@ -271,12 +330,13 @@ def check_raw_integrity(wiki_root: Path) -> list[dict]:
     if not raw_dir.is_dir():
         return issues
     for path in sorted(p for p in raw_dir.rglob("*") if p.is_file()):
-        if path.name.startswith("."):
+        if path.name.startswith(".") or is_sha256_sidecar(path):
             continue
+        rel_path = str(path.relative_to(wiki_root))
         try:
             data = path.read_bytes()
         except OSError as e:
-            issues.append({"path": str(path.relative_to(wiki_root)), "issue": "unreadable", "error": str(e)})
+            issues.append({"path": rel_path, "issue": "unreadable", "error": str(e)})
             continue
         text = None
         try:
@@ -285,24 +345,42 @@ def check_raw_integrity(wiki_root: Path) -> list[dict]:
             pass
         recorded = None
         body_bytes = data
-        if text is not None:
+        sidecar = None
+        if should_use_sha256_sidecar(path, text):
+            recorded, sidecar_issue, sidecar = read_sha256_sidecar(path)
+            rel_sidecar = str(sidecar.relative_to(wiki_root))
+            if sidecar_issue:
+                issues.append({
+                    "path": rel_path,
+                    "issue": sidecar_issue,
+                    "sidecar": rel_sidecar,
+                    "note": "binary raw files store sha256 in an adjacent .sha256 sidecar",
+                })
+                continue
+        elif text is not None:
             fm, body, has_fm = parse_frontmatter(text)
             recorded = fm.get("sha256") if has_fm else None
             if has_fm:
                 body_bytes = body.encode("utf-8")
-        # Binary files can carry sidecar hashes later; for now report missing metadata.
         if not recorded:
-            issues.append({"path": str(path.relative_to(wiki_root)), "issue": "missing_sha256"})
+            issues.append({"path": rel_path, "issue": "missing_sha256"})
             continue
         actual = hashlib.sha256(body_bytes).hexdigest()
         if str(recorded).lower() != actual.lower():
-            issues.append({
-                "path": str(path.relative_to(wiki_root)),
+            issue = {
+                "path": rel_path,
                 "issue": "sha256_mismatch",
                 "recorded": recorded,
                 "actual": actual,
-                "note": "sha256 is computed on body content (after frontmatter), not the entire file",
-            })
+                "note": (
+                    "sha256 is computed on the entire file for sidecar-backed binary raw files"
+                    if sidecar else
+                    "sha256 is computed on body content (after frontmatter), not the entire file"
+                ),
+            }
+            if sidecar:
+                issue["sidecar"] = str(sidecar.relative_to(wiki_root))
+            issues.append(issue)
     return issues
 
 
@@ -538,12 +616,20 @@ def format_report(results: dict) -> str:
     if raw_items is not None:
         lines.append("## raw 完整性")
         lines.append("")
-        lines.append("> 注：sha256 是对 body 内容（去掉 YAML frontmatter 后）计算的，不是整个文件。")
+        lines.append("> 注：文本 raw 的 sha256 对 body 内容（去掉 YAML frontmatter 后）计算；binary raw 使用相邻 `.sha256` sidecar, 对整个文件计算。")
         lines.append("")
         if raw_items:
             has_issues = True
             for r in raw_items:
-                lines.append(f"- ⚠️ `{r['path']}` — {r['issue']}")
+                details = []
+                if r.get("sidecar"):
+                    details.append(f"sidecar=`{r['sidecar']}`")
+                if r.get("recorded") and r.get("actual"):
+                    details.append(f"recorded=`{r['recorded']}` actual=`{r['actual']}`")
+                if r.get("error"):
+                    details.append(f"error={r['error']}")
+                suffix = f" ({'; '.join(details)})" if details else ""
+                lines.append(f"- ⚠️ `{r['path']}` — {r['issue']}{suffix}")
             lines.append(f"")
             lines.append(f"**共 {len(raw_items)} 项**")
         else:

@@ -25,7 +25,16 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from lint import extract_wikilinks, find_wiki_pages, parse_frontmatter, read_text, unique_pages
+from lint import (
+    extract_wikilinks,
+    find_wiki_pages,
+    is_sha256_sidecar,
+    parse_frontmatter,
+    read_sha256_sidecar,
+    read_text,
+    should_use_sha256_sidecar,
+    unique_pages,
+)
 
 PAGE_OPERATIONS = {"create", "update", "merge", "skip", "needs-confirmation"}
 TEXT_READY_EXTENSIONS = {".md", ".markdown", ".txt", ".text", ".rst", ".csv", ".json", ".yaml", ".yml", ".py", ".js", ".ts"}
@@ -95,6 +104,8 @@ def readiness_for_path(path: Path) -> str:
 
 def body_hash_for_file(path: Path) -> tuple[str | None, int]:
     data = path.read_bytes()
+    if should_use_sha256_sidecar(path):
+        return hashlib.sha256(data).hexdigest(), len(data)
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
@@ -118,6 +129,14 @@ def raw_destination(source: dict[str, Any]) -> str:
     return f"raw/notes/{slug}.md"
 
 
+def add_raw_destination_metadata(source: dict[str, Any]) -> None:
+    destination = raw_destination(source)
+    source["proposed_raw_destination"] = destination
+    if should_use_sha256_sidecar(Path(destination)):
+        source["proposed_sha256_sidecar"] = f"{destination}.sha256"
+        source["notes"].append("Approved ingest should write an adjacent .sha256 sidecar for this binary raw file.")
+
+
 def build_source(input_value: str, sequence: int) -> dict[str, Any]:
     if is_url(input_value):
         parsed = urlparse(input_value)
@@ -134,7 +153,7 @@ def build_source(input_value: str, sequence: int) -> dict[str, Any]:
             "size_bytes": None,
             "notes": ["URL source requires extraction during approved ingest; this plan does not fetch or write it."],
         }
-        source["proposed_raw_destination"] = raw_destination(source)
+        add_raw_destination_metadata(source)
         return source
 
     path = Path(input_value).expanduser()
@@ -163,7 +182,7 @@ def build_source(input_value: str, sequence: int) -> dict[str, Any]:
             "size_bytes": size,
             "notes": [],
         }
-        source["proposed_raw_destination"] = raw_destination(source)
+        add_raw_destination_metadata(source)
         return source
 
     if looks_like_missing_path(input_value):
@@ -183,7 +202,7 @@ def build_source(input_value: str, sequence: int) -> dict[str, Any]:
         "size_bytes": len(text_bytes),
         "notes": ["Pasted content is treated as a source candidate; Tiny Note Exception still requires explicit user intent."],
     }
-    source["proposed_raw_destination"] = raw_destination(source)
+    add_raw_destination_metadata(source)
     return source
 
 
@@ -192,7 +211,7 @@ def raw_records(wiki_root: Path) -> list[dict[str, Any]]:
     if not raw_dir.is_dir():
         return []
     records = []
-    for path in sorted(p for p in raw_dir.rglob("*") if p.is_file() and not p.name.startswith(".")):
+    for path in sorted(p for p in raw_dir.rglob("*") if p.is_file() and not p.name.startswith(".") and not is_sha256_sidecar(p)):
         record: dict[str, Any] = {"path": str(path.relative_to(wiki_root)), "title": path.stem}
         try:
             digest, _ = body_hash_for_file(path)
@@ -201,12 +220,24 @@ def raw_records(wiki_root: Path) -> list[dict[str, Any]]:
             records.append(record)
             continue
         record["actual_sha256"] = digest
-        text = read_text(path)
-        fm, _, has_fm = parse_frontmatter(text)
-        if has_fm:
-            record["sha256"] = str(fm.get("sha256") or "")
-            record["source_url"] = fm.get("source_url")
-            record["source_type"] = fm.get("source_type")
+        try:
+            text = path.read_bytes().decode("utf-8")
+        except UnicodeDecodeError:
+            text = None
+        if should_use_sha256_sidecar(path, text):
+            recorded, sidecar_issue, sidecar = read_sha256_sidecar(path)
+            record["sha256_sidecar"] = str(sidecar.relative_to(wiki_root))
+            if recorded:
+                record["sha256"] = recorded
+            if sidecar_issue:
+                record["sha256_sidecar_issue"] = sidecar_issue
+        else:
+            text = read_text(path)
+            fm, _, has_fm = parse_frontmatter(text)
+            if has_fm:
+                record["sha256"] = str(fm.get("sha256") or "")
+                record["source_url"] = fm.get("source_url")
+                record["source_type"] = fm.get("source_type")
         records.append(record)
     return records
 
@@ -417,6 +448,8 @@ def format_markdown(plan: dict[str, Any]) -> str:
             f"- Source identity: `{identity['status']}`",
             f"- Proposed Raw Destination: `{source['proposed_raw_destination']}`",
         ])
+        if source.get("proposed_sha256_sidecar"):
+            lines.append(f"- Proposed sha256 Sidecar: `{source['proposed_sha256_sidecar']}`")
         if source.get("source_url"):
             lines.append(f"- Source URL: {source['source_url']}")
         for match in identity.get("matches", []):

@@ -24,6 +24,7 @@ The script owns file/page facts only:
 
 - source type and readiness
 - source body hash when available
+- proposed sha256 sidecar path for binary raw files such as PDFs
 - existing raw identity, including Source Drift
 - proposed Raw Destination
 - current page inventory
@@ -72,6 +73,8 @@ Treat source identity as follows:
 - URL without extracted text/hash: source is not identity-complete yet.
 
 External sources may receive a proposed Raw Destination, but the plan must not write it.
+
+Binary raw files use adjacent hash sidecars instead of YAML frontmatter. For example, an approved ingest of `raw/papers/example.pdf` should also write `raw/papers/example.pdf.sha256`, whose first non-comment line is the sha256 of the entire PDF file.
 
 ## Source Readiness
 

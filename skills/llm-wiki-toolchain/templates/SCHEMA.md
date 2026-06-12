@@ -47,6 +47,21 @@ sha256: <hex digest of body content>
 ---
 ```
 
+Binary raw files must not be rewritten just to add YAML frontmatter. Store their hash in an adjacent sidecar file whose name is the raw filename plus `.sha256`:
+
+```text
+raw/papers/example.pdf
+raw/papers/example.pdf.sha256
+```
+
+The sidecar's first non-empty, non-comment line should be either the 64-character hex digest or `sha256: <hex digest>`. For binary sidecars, the digest is computed on the entire binary file:
+
+```text
+0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+```
+
+`lint.py --raw` reports `missing_sha256_sidecar` when a binary raw file lacks this sidecar and `sha256_mismatch` when the sidecar hash differs from the file content.
+
 ## Page Conventions
 
 ### All Current Wiki Pages
