@@ -84,6 +84,17 @@ sha256: <hex digest of body content>
 - Sections: Overview, Key Points, Analysis, Open Questions, Sources.
 - Source summaries and domain overview pages go here.
 
+### Source Summary Pages (`wiki/topics/`)
+
+- Use for compact single-source entries. A Source Summary should give a 2-3 minute view of the source's main line without replacing a Reading Guide.
+- Include a dedicated `Source Spine` / `来源主线` section with Problem, Approach, Key Claim, Limitation, and Wiki Impact.
+- For papers, preserve the research logic: research question, method or system, main result, limitation, and wiki impact.
+- For non-paper sources, adapt the labels when useful but preserve the five-part spine.
+- Order `核心要点` by the source's logic rather than by entity, tag, or model-interest order.
+- Strong claims, numeric details, paper conclusions, disputed judgments, and corrections require a raw locator or a Raw Evidence entry.
+- A Source Summary may link to a Reading Guide for explanation, but stable claims should still route back to raw evidence.
+- When materially updating an older Source Summary, add the Source Spine if missing; do not run a full migration only for format parity.
+
 ### Comparison Pages (`wiki/comparisons/`)
 
 - Frontmatter: `tags: [comparison, <subtopic>]`, `created`, `updated`, `status`, optional `confidence`.
@@ -107,7 +118,7 @@ sha256: <hex digest of body content>
 Readable wiki pages should help a future reader understand the material without weakening evidence discipline.
 
 - Reading Guides require a readability pass.
-- Topic source summaries use a light pass; keep them short, searchable, and evidence-oriented.
+- Topic source summaries use a light pass; keep them short, searchable, evidence-oriented, and organized around the Source Spine.
 - Concept, entity, comparison, and query pages use a medium pass; improve paragraph clarity without loosening citations.
 - Raw sources are never humanized or rewritten.
 - Index, log, and topic-map pages receive only clarity and format cleanup.

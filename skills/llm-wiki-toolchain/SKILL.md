@@ -232,6 +232,8 @@ python3 <SKILL_DIR>/scripts/ingest_plan.py "<wiki-root>" "<source>" [更多来�
 
 4. **创建来源摘要页。** 使用页面模板，写入 `wiki/topics/<来源标题>.md`。先加载模板：`skill_view(name='llm-wiki-toolchain', file_path='templates/page-templates/source-summary.md')`。
 
+   Source Summary 的目标是 2-3 分钟读懂来源主线，而不是替代 Reading Guide。页面必须包含 `来源主线` / Source Spine：Problem、Approach、Key Claim、Limitation、Wiki Impact。`核心要点` 按来源逻辑排序；强 claim、数值、论文结论、争议判断和纠错必须带 raw locator 或进入 Raw Evidence。详细解释放 Reading Guide。
+
 5. **更新实体页。** 对来源中提到的每个实体：
    - 如果实体页已存在，读取后添加引用此来源的章节，用 [[wikilink]] 链回来源摘要
    - 如果不存在，用实体模板创建新页面
@@ -301,6 +303,21 @@ V1 不要求段落级 provenance。强 claim、数值、论文结论、争议判
 
 > 详细规则见 `references/reading-guide-workflow.md` 和 `references/readable-wiki-page-standard.md`。V1 不新增生成脚本、不在普通 ingest 中自动创建 Reading Guide，也不把 agent 解读写入 `raw/`。
 
+## 来源摘要：Source Summary Quality
+
+Source Summary 是单个来源的紧凑入口页，通常位于 `wiki/topics/`。它应该让读者在 2-3 分钟内理解来源主线：问题、方法或视角、核心 claim、局限和 wiki 影响。它不是 Reading Guide；长篇讲解、逐段解释和读者引导放在 `wiki/readings/`。
+
+创建或实质更新 Source Summary 时：
+
+- 必须写 `来源主线` / Source Spine，覆盖 Problem、Approach、Key Claim、Limitation、Wiki Impact。
+- `核心要点` 按来源论证顺序排列，不按实体、标签或模型兴趣排序。
+- `核心要点` 写可复用知识点，不写第二份 abstract。
+- 普通解释性要点可以轻量；强 claim、数值、论文结论、争议判断和纠错必须带 raw locator 或进入 Raw Evidence。
+- 可以链接 Reading Guide 解释背景和读法，但稳定 claim 的证明路径仍回到 raw evidence。
+- 更新旧 Source Summary 时增量补 Source Spine，不做全库迁移。
+
+> 详细规则见 `references/source-summary-quality.md`。
+
 ## 可读性：Readable Wiki Page
 
 Readable Wiki Page 是 wiki 页面的默认写作标准，用来让页面更容易读，但不改变证据边界。它吸收 `humanizer` 的检查思路：删除 AI 腔、空泛意义提升、机械粗体、标题式列表、泛泛结论和 chatbot 残留；同时保留技术页面需要的朴素、准确和可追溯。
@@ -308,7 +325,7 @@ Readable Wiki Page 是 wiki 页面的默认写作标准，用来让页面更容�
 按页面类型使用不同强度：
 
 - `wiki/readings/`：必做。详细解读应按来源逻辑讲清楚问题、方法、结果和局限。
-- `wiki/topics/` 来源摘要：轻量。保持短、可检索、证据导向。
+- `wiki/topics/` 来源摘要：轻量。保持短、可检索、证据导向，同时用 Source Spine 保留来源主线。
 - `wiki/concepts/`、`wiki/entities/`、`wiki/comparisons/`：中等。提升段落清晰度，但稳定 claim 仍要靠来源。
 - `wiki/queries/`：中等。保留 Original Question 原貌，润色答案和后续动作。
 - `raw/`：不做。不可改写 immutable source、quoted evidence、公式、代码和 hash。
@@ -569,8 +586,11 @@ superseded_by: [[新页面名]]
 - 更新时机：新增领域、路线、专题综述或用户要求整理全景图时
 
 ### 来源摘要（`source-summary.md`）
-- 前置元数据：source_url、source_type、date_ingested、tags
-- 章节：一句话总结、核心要点、涉及实体、涉及概念、原始笔记
+- 前置元数据：source_url、source_type、date_ingested、tags、status、confidence、raw_sha256
+- 用途：保存单个来源的紧凑入口页，2-3 分钟内说明来源主线
+- 必填内容：一句话总结、来源主线、核心要点、涉及实体、涉及概念、原始资料
+- 来源主线：Problem、Approach、Key Claim、Limitation、Wiki Impact
+- 证据边界：强 claim、数值、论文结论、争议判断和纠错必须带 raw locator 或进入 Raw Evidence；详细解释链接 Reading Guide
 
 ## 段落级溯源
 

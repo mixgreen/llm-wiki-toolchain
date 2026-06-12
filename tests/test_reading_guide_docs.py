@@ -124,12 +124,12 @@ class ReadingGuideDocsTest(unittest.TestCase):
             self.assertIn("## Readings", (root / "index.md").read_text(encoding="utf-8"))
             self.assertIn("wiki/readings/", (root / "log.md").read_text(encoding="utf-8"))
 
-    def test_package_and_plugin_versions_are_1_4_0(self) -> None:
+    def test_package_and_plugin_versions_are_1_5_0(self) -> None:
         package = json.loads(read("package.json"))
         plugin = json.loads(read(".claude-plugin/plugin.json"))
 
-        self.assertEqual(package["version"], "1.4.0")
-        self.assertEqual(plugin["version"], "1.4.0")
+        self.assertEqual(package["version"], "1.5.0")
+        self.assertEqual(plugin["version"], "1.5.0")
         self.assertEqual(package["version"], plugin["version"])
 
 

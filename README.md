@@ -6,7 +6,7 @@
 
 [English](./docs/README.en.md) · [安装](#安装) · [快速开始](#快速开始) · [工作流](#工作流) · [项目结构](#项目结构)
 
-![version](https://img.shields.io/badge/version-1.4.0-blue)
+![version](https://img.shields.io/badge/version-1.5.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![python](https://img.shields.io/badge/python-3.x-3776AB)
 ![obsidian](https://img.shields.io/badge/Obsidian-ready-7C3AED)
@@ -24,7 +24,7 @@
 
 | 你想要 | Toolchain 提供 |
 |---|---|
-| 摄入论文、文章、URL、本地笔记 | Ingest Plan 先审阅来源身份、页面影响、重复和漂移风险 |
+| 摄入论文、文章、URL、本地笔记 | Ingest Plan 先审阅来源身份、页面影响、重复和漂移风险；Source Summary 用来源主线压缩问题、方法、结论、局限和 wiki 影响 |
 | 想顺着论文逻辑读懂全文 | Reading Guide 将详细解读保存到 `wiki/readings/`，并默认做可读性润色 |
 | 让 wiki 能回答问题 | Agent 先读 `index.md` 和相关页面, 再用 wikilink 引用回答 |
 | 把好问题留下来 | Query Archive 将可复用答案保存到 `wiki/queries/` |
@@ -60,6 +60,7 @@ flowchart TB
 |---|---|---|
 | 摄入 | 单来源精读和批量来源导入, 自动建立交叉引用 | `raw/`, `wiki/`, `index.md`, `log.md` |
 | 写入前计划 | 先输出 Ingest Plan, 再等待用户确认 | chat report / optional JSON |
+| Source Summary | 用 `来源主线` 保存单个来源的压缩主线, 2-3 分钟读懂问题、方法、结论、局限和 wiki 影响 | `wiki/topics/*.md` |
 | 详细解读 | 为论文、长文章、报告保存讲解稿式 Reading Guide | `wiki/readings/*.md` |
 | 可读性标准 | 让 wiki 页面更像给未来的自己写的解释，同时保护 raw evidence | Readable Wiki Page pass |
 | 查询 | 综合 wiki 页面回答问题, 保留依据页面 | wikilink 引用 |

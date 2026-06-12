@@ -8,6 +8,7 @@ Agent skill for managing Obsidian-based LLM Wiki knowledge bases. Provides struc
 
 - Structured page types: entities, concepts, topics, comparisons, readings, queries
 - Pre-write Ingest Plan reports for source identity, page impact, and drift risk
+- Source Summary quality standard with a Source Spine for problem, approach, key claim, limitation, and wiki impact
 - Reading Guide workflow for saving detailed explanations of papers, long articles, and reports in `wiki/readings/`
 - Readable Wiki Page standard for improving prose while preserving raw evidence and source identifiers
 - Query Archive workflow for preserving reusable answers in `wiki/queries/`
@@ -86,6 +87,8 @@ python3 <install-path>/scripts/ingest_plan.py ~/Documents/MyVault/research-wiki 
 ```
 
 The Ingest Plan command only prints a report. It does not write to `raw/`, `wiki/`, `index.md`, or `log.md`.
+
+Approved ingest writes Source Summary pages as compact source entries. Each Source Summary should include a Source Spine so readers can understand the source's problem, approach, key claim, limitation, and wiki impact before deciding whether to open the raw source or a Reading Guide.
 
 In agent chat, ask to save a reusable answer as a Query Archive when it should feed back into `wiki/queries/`.
 
